@@ -1,20 +1,32 @@
 import React from 'react';
-import {StyleSheet, Text, View} from 'react-native';
+import {StyleSheet, Text, View, TouchableOpacity} from 'react-native';
+import {useDispatch} from 'react-redux';
 import styled from 'styled-components/native';
+import {logOutRequest} from '../reducers/user';
 
 const UserInfoContainer = styled.View`
   flex-direction: column;
   padding: 25px;
-  background-color: white;
+  background-color: #d3d3d3;
+  color: white;
 `;
 const Userinfo = StyleSheet.create({
-  container: {
-    flex: 1,
-    flexDirection: 'column',
+  profile: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    color: 'white',
   },
   nickname: {
     fontSize: 40,
     fontWeight: '700',
+  },
+  logout: {
+    padding: 5,
+    alignSelf: 'center',
+    backgroundColor: '#FF6347',
+  },
+  logout_text: {
+    color: 'white',
   },
   item: {
     flexDirection: 'row',
@@ -33,10 +45,22 @@ const Userinfo = StyleSheet.create({
   },
 });
 
-const UserInfo = ({user}) => {
+const UserInfo = ({me}) => {
+  console.log(me);
+  const dispatch = useDispatch();
+  // 로그아웃
+  const onPressLogOut = () => {
+    dispatch(logOutRequest());
+  };
+
   return (
     <UserInfoContainer>
-      <Text style={Userinfo.nickname}>{user.nickname}</Text>
+      <View style={Userinfo.profile}>
+        <Text style={Userinfo.nickname}>{me.nickname}</Text>
+        <TouchableOpacity style={Userinfo.logout} onPress={onPressLogOut}>
+          <Text style={Userinfo.logout_text}>로그아웃</Text>
+        </TouchableOpacity>
+      </View>
       <View style={Userinfo.item}>
         <Text style={Userinfo.following}>팔로잉 0</Text>
         <Text style={Userinfo.follower}>팔로워 17</Text>

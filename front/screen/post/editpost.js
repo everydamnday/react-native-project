@@ -1,10 +1,11 @@
-import React, {useCallback, useState} from 'react';
+import React, {useEffect} from 'react';
 import {
   Text,
   View,
   StyleSheet,
   TextInput,
   TouchableOpacity,
+  Image,
   ScrollView,
 } from 'react-native';
 import styled from 'styled-components/native';
@@ -18,6 +19,8 @@ import {
   imageUpLoad,
   imageRemove,
   sharePostRequest,
+  UPLOAD_IMAGE_ADD,
+  editPostRequest,
 } from '../../reducers/posts';
 import useInput from '../../hooks/useInput';
 import Post from '../../component/post';
@@ -25,13 +28,13 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import SharePost from '../../component/sharepost';
 import {addPostToMe} from '../../reducers/user';
 
-const AddPostContainer = styled.View`
+const EditPostContainer = styled.View`
   flex: 1;
   background-color: white;
   flex-direction: column;
 `;
 
-const Addpost = StyleSheet.create({
+const Editpost = StyleSheet.create({
   container: {
     margin: 20,
   },
@@ -43,7 +46,7 @@ const Addpost = StyleSheet.create({
   content: {
     fontSize: 20,
   },
-  addItem: {
+  pic_item: {
     flexDirection: 'row',
     justifyContent: 'space-around',
     padding: 5,
@@ -72,16 +75,26 @@ const Addpost = StyleSheet.create({
   },
 });
 
-const AddPost = ({route}) => {
-  const postId = route.params; // 공유하기일 경우에만 값을 갖는다.
-  const [title, onChangeTitle, setTitle] = useInput();
-  const [content, onChangeContent, setContent] = useInput();
-  const dispatch = useDispatch();
-  // const posts = useSelector(state => state.posts);
-  const upLoadedImages = useSelector(state => state.posts.upLoadedImages);
-  const sharePost = useSelector(state =>
+// addPost와 달리 쓰여진 데이터가 들어가야 한다.
+// 단순히 view가 아니라 textInput에 value로 넣어주어야 한다.
+
+const EditPost = ({route}) => {
+  const postId = route.params; // 수정 대상 포스트 id
+  const targetPost = useSelector(state =>
     state.posts.mainPosts.find(p => p.id === postId),
   );
+  const [title, onChangeTitle, setTitle] = useInput('');
+  const [content, onChangeContent, setContent] = useInput('');
+  const dispatch = useDispatch();
+  const upLoadedImages = useSelector(state => state.posts.upLoadedImages);
+
+  // 기존 데이터를 넣기
+  useEffect(() => {
+    setTitle(targetPost.title);
+    setContent(targetPost.content);
+    console.log(targetPost.Images);
+    dispatch(imageUpLoad(targetPost.Images));
+  }, []);
 
   // 카메라 앨범 열기
   const onGalleryOpen = () => {
@@ -134,47 +147,48 @@ const AddPost = ({route}) => {
   const navigation = useNavigation();
   const onSubmit = () => {
     navigation.navigate('Post'); // 메인포스트 페이지로 넘어가기
-    if (sharePost) {
-      dispatch(sharePostRequest({title, content, sharePostId: postId}));
-    } else {
-      dispatch(addPostRequest({title, content, upLoadedImages})); // 작성된 내용을 dispatch
-    }
+    dispatch(
+      editPostRequest({
+        postId,
+        title,
+        content,
+        upLoadedImages,
+      }),
+    ); // 작성된 내용을 dispatch
     setTitle('');
     setContent('');
   };
 
   return (
-    <AddPostContainer>
+    <EditPostContainer>
       <ScrollView style={{borderWidth: 1, flex: 1}}>
-        <View style={Addpost.container}>
-          {sharePost ? null : (
-            <View style={Addpost.addItem}>
-              <TouchableOpacity onPress={onGalleryOpen}>
-                <Text style={Addpost.image}>
-                  <Ionicons name="images-outline" size={20} />
-                </Text>
-              </TouchableOpacity>
-              <Text>|</Text>
-              <TouchableOpacity onPress={onCameraOpen}>
-                <Text style={Addpost.camera}>
-                  <Ionicons name="camera-outline" size={20} />
-                </Text>
-              </TouchableOpacity>
-              <Text>|</Text>
-              <TouchableOpacity onPress={onImageRemove}>
-                <Text style={Addpost.erase}>
-                  <Ionicons name="trash-bin-outline" size={20} />
-                </Text>
-              </TouchableOpacity>
-            </View>
-          )}
+        <View style={Editpost.container}>
+          <View style={Editpost.pic_item}>
+            <TouchableOpacity onPress={onGalleryOpen}>
+              <Text style={Editpost.image}>
+                <Ionicons name="images-outline" size={20} />
+              </Text>
+            </TouchableOpacity>
+            <Text>|</Text>
+            <TouchableOpacity onPress={onCameraOpen}>
+              <Text style={Editpost.camera}>
+                <Ionicons name="camera-outline" size={20} />
+              </Text>
+            </TouchableOpacity>
+            <Text>|</Text>
+            <TouchableOpacity onPress={onImageRemove}>
+              <Text style={Editpost.erase}>
+                <Ionicons name="trash-bin-outline" size={20} />
+              </Text>
+            </TouchableOpacity>
+          </View>
           <TextInput
             placeholder="제목"
-            style={Addpost.title}
+            style={Editpost.title}
             value={title}
             onChange={onChangeTitle}
           />
-          <View style={Addpost.content}>
+          <View style={Editpost.content}>
             <TextInput
               placeholder="무슨 생각을 하고 계신가요?"
               multiline={true}
@@ -183,26 +197,19 @@ const AddPost = ({route}) => {
             />
           </View>
           {upLoadedImages[0] && (
-            <View style={Addpost.inputimage}>
+            <View style={Editpost.inputimage}>
               <PostImages images={upLoadedImages} />
             </View>
           )}
-          {sharePost && (
-            <SharePost
-              post={sharePost}
-              sharePostId={sharePost.id}
-              tab={'Post'}
-            />
-          )}
         </View>
       </ScrollView>
-      <View style={Addpost.button}>
+      <View style={Editpost.button}>
         <TouchableOpacity onPress={onSubmit}>
-          <Text style={Addpost.button_text}>게시하기</Text>
+          <Text style={Editpost.button_text}>게시하기</Text>
         </TouchableOpacity>
       </View>
-    </AddPostContainer>
+    </EditPostContainer>
   );
 };
 
-export default AddPost;
+export default EditPost;

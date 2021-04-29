@@ -4,18 +4,21 @@
 import React, {useState} from 'react';
 import {StyleSheet, Text, View, Image, TouchableOpacity} from 'react-native';
 import {SliderBox} from 'react-native-image-slider-box';
-import styled from 'styled-components/native';
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
 } from 'react-native-responsive-screen';
-import {Button} from 'react-native-elements';
+
 const ImageZoom = ({images, toggleOverlay}) => {
   const [currentIndex, setCurrentIndex] = useState({currentIndex: 1});
   const [parentHeight, setParentHeight] = useState(0);
+
+  const imagesList = [];
+  images.map(i => {
+    imagesList.push(i.uri);
+  });
   const onLayout = e => {
     const {height} = e.nativeEvent.layout;
-    console.log('parent_view h', height);
     setParentHeight(height);
   };
   return (
@@ -54,7 +57,7 @@ const ImageZoom = ({images, toggleOverlay}) => {
         // autoplay={true} //자동 슬라이드 넘김
         circleLoop={true} //맨끝 슬라이드에서 다시 첫슬라이드로
         resizeMode="contain" // 이미지 사이즈 조절값
-        images={images} // 이미지 주소 리스트
+        images={imagesList} // 이미지 주소 리스트
         dotColor="rgba(0,0,0,0)"
         // // dotColor="#FFEE58" // 아래 점 투명으로 안보이게 가림
         inactiveDotColor="rgba(0,0,0,0)"
@@ -103,4 +106,4 @@ const ImageZoom = ({images, toggleOverlay}) => {
 
 export default ImageZoom;
 
-const styles = StyleSheet.create({});
+// const styles = StyleSheet.create({});

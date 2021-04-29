@@ -6,10 +6,25 @@ import {
   TextInput,
   ScrollView,
   TouchableOpacity,
+  Button,
+  Dimensions,
+  Keyboard,
 } from 'react-native';
 import styled from 'styled-components/native';
 import Comment from './comment';
 import PostImages from './postimages';
+import useInput from '../hooks/useInput';
+import {
+  widthPercentageToDP as wp,
+  heightPercentageToDP as hp,
+} from 'react-native-responsive-screen';
+import {useDispatch} from 'react-redux';
+import {addComment, addReComment} from '../reducers/posts';
+import {useSelector} from 'react-redux';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import SharePost from './sharepost';
+
+const W = Dimensions.get('screen').width;
 
 const DetailPostContainer = styled.View`
   flex-direction: column;
@@ -85,7 +100,7 @@ const BottomOfDetailPost = StyleSheet.create({
   comments: {
     marginLeft: 10,
   },
-  shere: {
+  share: {
     marginLeft: 10,
     marginRight: 10,
   },
@@ -110,55 +125,122 @@ const CommentFilter = StyleSheet.create({
 
 const TextInputContainer = StyleSheet.create({
   container: {
-    backgroundColor: 'white',
+    alignSelf: 'stretch',
+    // backgroundColor: 'black',
+    borderTopWidth: 0.5,
     borderBottomWidth: 0.5,
     borderColor: '#20232a',
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    width: Dimensions.get('screen').width,
   },
   input: {
+    backgroundColor: 'white',
     padding: 10,
+    width: wp('85%'),
+  },
+  button: {
+    // 버튼 위치 다시 잡자.
+    padding: 5,
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: wp('15%'),
+    backgroundColor: '#1E90FF',
+  },
+  recommenter: {
+    width: wp('20%'),
+    fontSize: 1,
   },
 });
 
 const Detail = ({route, navigation}) => {
-  const post = route.params;
-  const [comment, setComment] = useState('');
-  const onChangeComment = useCallback(
-    e => {
-      setComment(e.target.value);
-    },
-    [comment],
+  // const post = route.params; //
+  const post = useSelector(state =>
+    state.posts.mainPosts.find(p => p.id === route.params.post.id),
   );
+  // 대댓글 분리
+  const [reCommentInputOpen, setReCommentInputOpen] = useState(false);
+  const [targetCommenter, setTargetCommenter] = useState(''); // 누구 댓글에 달거냐(view용)
+  const [targetCommentId, setTargetCommentId] = useState(''); // 대댓글 달려는 댓글 id가 뭐냐(서버 전달용)
+  const onPressReComment = comment => () => {
+    setReCommentInputOpen(prev => !prev); // 대댓글 창으로 변경
+    if (reCommentInputOpen) {
+      // 없으면 댓글창
+      setTargetCommenter('');
+      setTargetCommentId('');
+    } else {
+      // 있으면 대댓글 창
+      setTargetCommenter(comment.User.nickname);
+      setTargetCommentId(comment.id);
+    }
+  };
+
+  // 댓글
+  const [comment, onChangeComment, setComment] = useInput();
+  const dispatch = useDispatch();
+  const onSubmitComment = () => {
+    if (targetCommenter) {
+      // 대댓글일 경우
+      dispatch(
+        addReComment({
+          content: comment,
+          postId: post.id,
+          commentId: targetCommentId,
+        }),
+      );
+      setReCommentInputOpen(false); // 대댓글 창으로 변경
+      setTargetCommenter(''); // 누구 댓글에 달거냐(view용)
+      setTargetCommentId(''); // 대댓글 달려는 댓글 id가 뭐냐(서버 전달용)
+    } else {
+      // 댓글일 경우
+      dispatch(addComment({content: comment, postId: post.id})); // 작성자(서버에서 가능), 게시물 번호, 댓글 내용
+    }
+    setComment('');
+    Keyboard.dismiss();
+  };
   return (
     <>
       <ScrollView>
         <DetailPostContainer>
           <View style={TopOfDetailPost.container}>
             <View style={TopOfDetailPost.wrapper}>
-              <Text style={TopOfDetailPost.title}>{post.title}.</Text>
+              <Text style={TopOfDetailPost.title}>{post.title}</Text>
               <Text style={TopOfDetailPost.userinfo}>
-                {post.User.brand} / {post.User.location}{' '}
+                {post.User.nickname} / {post.User.brand} / {post.User.region}
               </Text>
               <Text style={TopOfDetailPost.createdAt}>{post.createdAt}</Text>
             </View>
           </View>
           <View style={BottomOfDetailPost.container}>
             <Text style={BottomOfDetailPost.content}>{post.content}</Text>
-            {post.images[0] && (
+            {post.Images?.[0] && (
               <View style={BottomOfDetailPost.imageContainer}>
                 <PostImages
                   style={BottomOfDetailPost.images}
-                  images={post.images}
+                  images={post.Images}
                 />
               </View>
             )}
+            {post.sharePostId && (
+              <SharePost
+                sharePostId={post.sharePostId}
+                tab={route.params.tab}
+              />
+            )}
             <View style={BottomOfDetailPost.bottom_bottom}>
-              <Text style={BottomOfDetailPost.like}>👍 {post.like} 좋아요</Text>
-              <Text>|</Text>
-              <Text style={BottomOfDetailPost.comments}>
-                💬 {post.comments.length} 댓글쓰기{' '}
+              <Text style={BottomOfDetailPost.like}>
+                <Ionicons name="thumbs-up-outline" size={15} />
+                {post.like}
               </Text>
               <Text>|</Text>
-              <Text style={BottomOfDetailPost.shere}>👁‍🗨 공유하기</Text>
+              <Text style={BottomOfDetailPost.comments}>
+                <Ionicons name="chatbox-ellipses-outline" size={15} />
+                {post.Comments.length}
+              </Text>
+              <Text>|</Text>
+              <Text style={BottomOfDetailPost.share}>
+                <Ionicons name="eye-outline" size={15} />
+              </Text>
             </View>
           </View>
         </DetailPostContainer>
@@ -168,19 +250,42 @@ const Detail = ({route, navigation}) => {
             <Text>⧻시간순</Text>
             <Text>↓마지막 댓글로 이동</Text>
           </View>
-          {post.comments.map(comment => (
-            <TouchableOpacity key={comment.id}>
-              <Comment key={comment.id} comment={comment} />
-            </TouchableOpacity>
+          {post.Comments.map(comment => (
+            <Comment
+              key={comment.id}
+              onPressReComment={onPressReComment}
+              comment={comment}
+              postId={post.id}
+            />
           ))}
         </CommentContainer>
       </ScrollView>
       <View style={TextInputContainer.container}>
+        {reCommentInputOpen && (
+          <View style={TextInputContainer.recommenter}>
+            <Text>{targetCommenter}님에게</Text>
+          </View>
+        )}
         <TextInput
           placeholder="댓글을 적어주세요"
           value={comment}
+          multiline
+          // onScroll={() => Keyboard.dismiss()}
           onChange={onChangeComment}
-          style={TextInputContainer.input}></TextInput>
+          style={TextInputContainer.input}
+          onSubmitEditing={onSubmitComment}
+        />
+        <TouchableOpacity
+          onPress={onSubmitComment}
+          style={TextInputContainer.button}>
+          <Text
+            style={{
+              color: 'white',
+              textAlign: 'center',
+            }}>
+            보내기
+          </Text>
+        </TouchableOpacity>
       </View>
     </>
   );
