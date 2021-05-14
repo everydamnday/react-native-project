@@ -26,7 +26,7 @@ function* watchLogIn() {
 }
 // 액션 핸들러
 function* login(action) {
-  console.log('login saga의 실행', action);
+  console.log('login saga의 실행');
   try {
     // yield call(loginAPI, action.data);
     yield delay(500);

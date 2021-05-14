@@ -69,7 +69,7 @@ function* loadpost(action) {
   console.log('loadpost의 실행');
   try {
     // yield call(loadpostAPI, action.data);
-    yield delay(300);
+    // yield delay(300);
     yield put({type: LOAD_POST_SUCCESS, data: action.data}); // data = 5
   } catch (e) {
     console.log(e);
@@ -92,9 +92,10 @@ function* watchAddPost() {
 function* addpost(action) {
   console.log('addpost의 실행');
   try {
-    // yield call(addpostAPI, action.data);
-    yield delay(1000);
-    yield put({type: ADD_POST_SUCCESS, data: action.data}); // data = {title, content, Images}
+    const res = yield call(addpostAPI, action.data);
+    // yield delay(1000);
+    console.log(res.data);
+    yield put({type: ADD_POST_SUCCESS, data: res.data}); // data = {title, content, Images}
     // yield put({type : ADD_POST_TO_ME, data : res.data.id})
   } catch (e) {
     console.log(e);
@@ -118,7 +119,7 @@ function* editpost(action) {
   console.log('editpost의 실행');
   try {
     // yield call(editpostAPI, action.data);
-    yield delay(1000);
+    // yield delay(1000);
     yield put({type: EDIT_POST_SUCCESS, data: action.data}); // data = {  postId, title, content, upLoadedImages }
   } catch (e) {
     console.log(e);
@@ -142,7 +143,7 @@ function* deletepost(action) {
   console.log('deletepost의 실행');
   try {
     // yield call(deletepostAPI, action.data);
-    yield delay(1000);
+    // yield delay(1000);
     yield put({type: DELETE_POST_SUCCESS, data: action.data}); // data = { postId : post.id }
   } catch (e) {
     console.log(e);
@@ -166,7 +167,7 @@ function* sharepost(action) {
   console.log('sharepost의 실행');
   try {
     // yield call(sharepostAPI, action.data);
-    yield delay(1000);
+    // yield delay(1000);
     yield put({type: SHARE_POST_SUCCESS, data: action.data}); // data = {title, content, sharePostId : postId}
   } catch (e) {
     console.log(e);
@@ -190,7 +191,7 @@ function* addcomment(action) {
   console.log('addcomment 실행');
   try {
     // yield call(addcommentAPI, action.data);
-    yield delay(1000);
+    // yield delay(1000);
     yield put({type: ADD_COMMENT_SUCCESS, data: action.data}); // data = {content : comment, postId : post.id}
   } catch (e) {
     console.log(e);
@@ -214,7 +215,7 @@ function* editcomment(action) {
   console.log('editcomment의 실행');
   try {
     // yield call(editcommentAPI, action.data);
-    yield delay(1000);
+    // yield delay(1000);
     yield put({type: EDIT_COMMENT_SUCCESS, data: action.data}); // data = {  postId, commentId: comment.id, content: text }
   } catch (e) {
     console.log(e);
@@ -238,7 +239,7 @@ function* deletecomment(action) {
   console.log('deletecomment 실행');
   try {
     // yield call(deletecommentAPI, action.data);
-    yield delay(1000);
+    // yield delay(1000);
     yield put({type: DELETE_COMMENT_SUCCESS, data: action.data}); // data = {postId: postId, commentId: commentId}
   } catch (e) {
     console.log(e);
@@ -262,7 +263,7 @@ function* addrecomment(action) {
   console.log('addrecomment 실행');
   try {
     // yield call(addrecommentAPI, action.data);
-    yield delay(1000);
+    // yield delay(1000);
     yield put({type: ADD_RECOMMENT_SUCCESS, data: action.data}); // data = {content : comment, postId : post.id, commentId: targetCommentId}
   } catch (e) {
     console.log(e);
@@ -286,7 +287,7 @@ function* editrecomment(action) {
   console.log('editrecomment의 실행');
   try {
     // yield call(editrecommentAPI, action.data);
-    yield delay(1000);
+    // yield delay(1000);
     yield put({type: EDIT_RECOMMENT_SUCCESS, data: action.data}); // data = {  postId, commentId, recommentId: recomment.id, content: text }
   } catch (e) {
     console.log(e);
@@ -313,7 +314,7 @@ function* deleterecomment(action) {
   console.log('deleterecomment 실행');
   try {
     // yield call(deleterecommentAPI, action.data);
-    yield delay(1000);
+    // yield delay(1000);
     yield put({type: DELETE_RECOMMENT_SUCCESS, data: action.data}); // data = {postId: postId, commentId: commentId, recommentId: recommentId}
   } catch (e) {
     console.log(e);
@@ -339,7 +340,7 @@ function* likepost(action) {
   console.log('likepost의 실행');
   try {
     // yield call(likepostAPI, action.data);
-    yield delay(1000);
+    // yield delay(1000);
     yield put({type: LIKE_POST_SUCCESS, data: action.data}); // action.data = id
   } catch (e) {
     console.log(e);

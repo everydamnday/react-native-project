@@ -3,7 +3,6 @@ import shortId from 'shortid';
 import faker from 'faker/locale/ko';
 import produce from 'immer';
 import {random} from 'faker/locale/ko';
-import {isPlainObject} from 'immer/dist/internal';
 
 // 날짜 만들기
 const year = new Date().getFullYear();
