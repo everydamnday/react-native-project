@@ -96,7 +96,7 @@ function* addpost(action) {
     // yield delay(1000);
     console.log(res.data);
     yield put({type: ADD_POST_SUCCESS, data: res.data}); // data = {title, content, Images}
-    // yield put({type : ADD_POST_TO_ME, data : res.data.id})
+    yield put({type: ADD_POST_TO_ME, data: res.data.id});
   } catch (e) {
     console.log(e);
     yield put({type: ADD_POST_FAILURE, error: e.response.data});
@@ -106,7 +106,7 @@ function* addpost(action) {
 //API
 const addpostAPI = data => {
   // data = {title, content, Images}
-  return axios.post('/post', data);
+  return axios.post('/post/add', data);
 };
 
 ////////////////////////////////////     EditPost      ///////////////////////////////////////////

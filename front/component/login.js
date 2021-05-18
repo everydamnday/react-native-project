@@ -15,6 +15,7 @@ import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
 } from 'react-native-responsive-screen';
+import {useNavigation} from '@react-navigation/native';
 
 const LoginContainer = styled.View`
   flex: 1;
@@ -111,8 +112,9 @@ const Login = () => {
     setPassword('');
   };
   // 회원가입
+  const navigation = useNavigation();
   const onSignIn = useCallback(() => {
-    console.log('회원가입');
+    navigation.navigate('SignIn');
   }, []);
   // 소셜인증
   const onAuthLogin = useCallback(() => {
@@ -123,8 +125,8 @@ const Login = () => {
       <View>
         <Image
           style={{
-            width: wp('90%'),
-            height: hp('30%'),
+            width: wp('60%'),
+            height: hp('20%'),
           }}
           source={{
             uri:

@@ -5,6 +5,10 @@ import faker, {date} from 'faker/locale/ko';
 
 // 액션변수
 ////////////////////////////////////////////////    액션 변수   //////////////////////////////////////////////
+// 회원가입
+export const SIGN_IN_REQUEST = 'SIGN_IN_REQUEST';
+export const SIGN_IN_SUCCESS = 'SIGN_IN_SUCCESS';
+export const SIGN_IN_FAILURE = 'SIGN_IN_FAILURE';
 // 로그인
 export const LOG_IN_REQUEST = 'LOG_IN_REQUEST';
 export const LOG_IN_SUCCESS = 'LOG_IN_SUCCESS';
@@ -25,6 +29,9 @@ const initialState = {
   me: null,
   logInData: {},
   signUpData: {},
+  signInLoading: false, // 회원가입
+  signInDone: false,
+  signInError: null,
   logInLoading: false, // 로그인
   logInDone: false,
   logInError: null,
@@ -37,6 +44,12 @@ const initialState = {
 };
 
 //////////////////////////////////////////////  액션 크리에이터  //////////////////////////////////////////////
+
+// 회원가입
+export const signInRequest = data => ({
+  type: SIGN_IN_REQUEST,
+  data: data,
+});
 // 로그인
 export const logInRequest = data => ({
   type: LOG_IN_REQUEST,
@@ -60,15 +73,17 @@ export const addPostToMe = data => ({
 ///////////////////////////////////////  더미생성기  //////////////////////////////////
 const dummyUser = data => {
   return {
-    id: shortId.generate(),
-    nickname: faker.name.findName(),
-    brand: 'GS25',
-    region: '산본',
+    id: data.id,
+    nickname: data.nickname,
+    brand: data.brand,
+    region: data.region,
     email: data.email,
-    password: data.password,
-    createdAt: faker.date.recent(),
-    PostsId: [],
-    bookmarkId: [],
+    // password: data.password,
+    createdAt: data.createdAt,
+    PostsId: data.Posts,
+    CommentId: data.Comment,
+    RecommentId: data.Recomment,
+    bookmarkId: data.Bookmarked,
   };
 };
 
@@ -76,6 +91,22 @@ const dummyUser = data => {
 const user = (state = initialState, action) => {
   return produce(state, draft => {
     switch (action.type) {
+      /////////////////////////////////// SIGN_IN ///////////////////////////////////
+      case SIGN_IN_REQUEST:
+        draft.signInLoading = true;
+        draft.signInDone = false;
+        draft.signInError = null;
+        break;
+      case SIGN_IN_SUCCESS:
+        draft.signInLoading = false;
+        draft.signInDone = true;
+        // draft.me = action.data;
+        draft.me = dummyUser(action.data);
+        break;
+      case SIGN_IN_FAILURE:
+        draft.signInLoading = false;
+        draft.signInError = action.error;
+        break;
       /////////////////////////////////// LOG_IN ///////////////////////////////////
       case LOG_IN_REQUEST:
         draft.logInLoading = true;
