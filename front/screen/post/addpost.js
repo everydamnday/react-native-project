@@ -107,12 +107,22 @@ const AddPost = ({route}) => {
       cropping: true,
     })
       .then(image => {
-        // image객체는 보다 많은 값을 갖지만 서버개설 전까지 필요한 id와 uri만 뽑아서 쓴다. 추후 변경.
-        const uploadImage = {
-          id: Math.floor(Math.random() * 100),
+        const imageFormData = new FormData();
+        let file = {
           uri: image.path,
-        }; // i.path = 이미지주소의 string
-        dispatch(imageUpLoad(uploadImage));
+          type: 'multipart/form-data',
+          name: 'image.png',
+        };
+        imageFormData.append('image', file);
+        // [].forEach.call(file, f => {
+        //   imageFormData.append('image', f);
+        // });
+        // image객체는 보다 많은 값을 갖지만 서버개설 전까지 필요한 id와 uri만 뽑아서 쓴다. 추후 변경.
+        // const uploadImage = {
+        //   id: Math.floor(Math.random() * 100),
+        //   uri: image.path,
+        // }; // i.path = 이미지주소의 string
+        dispatch(imageUpLoad(imageFormData));
       })
       .catch(e => {
         alert(e);

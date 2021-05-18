@@ -50,6 +50,12 @@ const initialState = {
   likePostLoading: false, // 포스트 좋아요
   likePostDone: false,
   likePostError: null,
+  uploadImageLoading: false, // 이미지 업로드
+  uploadImageDone: false,
+  uploadImageError: null,
+  removeImageLoading: false, // 업로드 이미지 삭제
+  removeImageDone: false,
+  removeImageError: null,
 };
 
 // 액션 변수
@@ -102,9 +108,12 @@ export const DELETE_RECOMMENT_FAILURE = 'DELETE_RECOMMENT_FAILURE';
 export const LIKE_POST_REQUEST = 'LIKE_POST_REQUEST';
 export const LIKE_POST_SUCCESS = 'LIKE_POST_SUCCESS';
 export const LIKE_POST_FAILURE = 'LIKE_POST_FAILURE';
-// 이미지 업로드 & 제거
-export const UPLOAD_IMAGE_ADD = 'UPLOAD_IMAGE_ADD';
-export const UPLOAD_IMAGE_REMOVE = 'UPLOAD_IMAGE_REMOVE';
+// 이미지 업로드
+export const UPLOAD_IMAGE_REQUEST = 'UPLOAD_IMAGE_REQUEST';
+export const UPLOAD_IMAGE_SUCCESS = 'UPLOAD_IMAGE_SUCCESS';
+export const UPLOAD_IMAGE_FAILURE = 'UPLOAD_IMAGE_FAILURE';
+// 업로드 이미지 제거
+export const REMOVE_IMAGE = 'REMOVE_IMAGE';
 
 //////////////////////////////////////////////  액션 크리에이터  //////////////////////////////////////////////
 // 포스트 로드(비동기)
@@ -172,12 +181,12 @@ export const likePost = data => ({
 }); // data = post.id
 // 이미지 업로드(동기)
 export const imageUpLoad = data => ({
-  type: UPLOAD_IMAGE_ADD,
+  type: UPLOAD_IMAGE_REQUEST,
   data,
 }); // data = uploadImage = [이미지 객체의 배열]
 // 업로드 이미지 제거(동기)
 export const imageRemove = () => ({
-  type: UPLOAD_IMAGE_REMOVE,
+  type: REMOVE_IMAGE,
 });
 
 /////////////////////////////////////////////////  더미생성기  ////////////////////////////////////////////
@@ -239,7 +248,7 @@ const dummyPost = data => ({
   id: shortId.generate(),
   title: data.title,
   content: data.content,
-  Images: data.upLoadedImages,
+  Images: data.Images,
   User: {
     id: shortId.generate(),
     nickname: faker.name.findName(),
@@ -564,15 +573,28 @@ const posts = (state = initialState, action) => {
         draft.likePostError = action.error;
         break;
 
-      case UPLOAD_IMAGE_ADD:
+      case UPLOAD_IMAGE_REQUEST:
+        draft.uploadImageLoading = true;
+        draft.uploadImageDone = false;
+        draft.uploadImageError = null;
+        break;
+      case UPLOAD_IMAGE_SUCCESS:
+        draft.uploadImageLoading = false;
+        draft.uploadImageDone = true;
         if (Array.isArray(action.data)) {
           draft.upLoadedImages = draft.upLoadedImages.concat(action.data);
         } else {
           draft.upLoadedImages.push(action.data); // => [].push([이미지 객체의 배열]) // 마지막에 넣는다.
         }
         break;
-      case UPLOAD_IMAGE_REMOVE:
-        draft.upLoadedImages = []; //업로드한 이미지 초기화 => [] 빈배열.
+      case UPLOAD_IMAGE_FAILURE:
+        draft.uploadImageLoading = false;
+        draft.uploadImageDone = false;
+        draft.uploadImageError = action.error;
+        break;
+
+      case REMOVE_IMAGE:
+        draft.upLoadedImages = [];
         break;
       default:
         break;

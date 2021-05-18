@@ -8,6 +8,7 @@ const userRouter = require("./routes/user");
 const db = require("./models");
 const passport = require("passport");
 const passportConfig = require("./passport");
+const path = require("path");
 require("dotenv").config();
 
 const app = express();
@@ -28,6 +29,7 @@ passportConfig();
 app.use(morgan("dev")); // 네트워크 로그 찍어줌.
 app.use(express.json()); // json 형식의 데이터를 해석해서 req.body 넣어줌
 app.use(express.urlencoded({ extended: true })); // onsubmit된 데이터를 해석해서 req.body에 넣어줌
+app.use("/", express.static(path.join(__dirname, "uploads")));
 app.use(cookieParser(process.env.COOKIE_SECRET));
 app.use(cors({ origin: true, credentials: true })); // 브라우저의 동일 도메인/포트 응답 거부 방지
 app.use(

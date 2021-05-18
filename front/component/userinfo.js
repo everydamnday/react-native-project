@@ -46,7 +46,6 @@ const Userinfo = StyleSheet.create({
 });
 
 const UserInfo = ({me}) => {
-  console.log(me);
   const dispatch = useDispatch();
   // 로그아웃
   const onPressLogOut = () => {

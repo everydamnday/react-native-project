@@ -37,6 +37,12 @@ import {
   EDIT_RECOMMENT_REQUEST,
   EDIT_RECOMMENT_SUCCESS,
   EDIT_RECOMMENT_FAILURE,
+  UPLOAD_IMAGE_REQUEST,
+  UPLOAD_IMAGE_SUCCESS,
+  UPLOAD_IMAGE_FAILURE,
+  REMOVE_IMAGE_SUCCESS,
+  REMOVE_IMAGE_FAILURE,
+  REMOVE_IMAGE_REQUEST,
 } from '../reducers/posts';
 import axios from 'axios';
 import {ADD_POST_TO_ME} from '../reducers/user';
@@ -56,6 +62,7 @@ export default function* postSaga() {
     fork(watchAddReComment),
     fork(watchEditReComment),
     fork(watchDeleteReComment),
+    fork(watchUploadImage),
   ]);
 }
 
@@ -353,3 +360,28 @@ const likepostAPI = data => {
   // data = action.data = post.id
   return axios.post(`/post/${data}/like`);
 };
+
+/////////////////////////////////////     UPLOAD_IMAGE      ///////////////////////////////////////////
+//액션 리스너
+function* watchUploadImage() {
+  yield takeLatest(UPLOAD_IMAGE_REQUEST, uploadimage);
+}
+//액션 핸들러
+function* uploadimage(action) {
+  console.log('uploadimage의 실행');
+  try {
+    const res = yield call(uploadimageAPI, action.data);
+    // yield delay(1000);
+    yield put({type: UPLOAD_IMAGE_SUCCESS, data: res.data}); // action.data =
+  } catch (e) {
+    console.log(e);
+    yield put({type: UPLOAD_IMAGE_FAILURE, error: e.response.data});
+  }
+}
+
+//API
+const uploadimageAPI = data => {
+  return axios.post('/post/images', data, {
+    headers: {'content-type': 'multipart/form-data'},
+  }); // 폼데이터는 그대로 data라고 쓴다. {} 감싸지 말것(json됨)
+}; // req.files 로 들어간다.
