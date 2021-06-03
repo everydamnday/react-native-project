@@ -1,7 +1,7 @@
 import React, {useState, useCallback} from 'react';
 
-const useInput = () => {
-  const [value, setValue] = useState(null);
+const useInput = initialState => {
+  const [value, setValue] = useState(initialState);
   const onChangeValue = useCallback(e => {
     setValue(e.nativeEvent.text);
   }, []);

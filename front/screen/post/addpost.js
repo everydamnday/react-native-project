@@ -90,11 +90,27 @@ const AddPost = ({route}) => {
     })
       .then(image => {
         // 선택된 image 객체를 배열에 넣어서 dispatch
-        const uploadImage = [];
-        image.map(i => {
-          uploadImage.push({id: Math.floor(Math.random() * 100), uri: i.path});
-        });
-        dispatch(imageUpLoad(uploadImage));
+        const imageFormData = new FormData();
+        if (Array.isArray(image) === true) {
+          // 배열인 경우(여러 개 일때)
+          image.map(i => {
+            let file = {
+              uri: i.path,
+              type: 'image/jpeg',
+              name: 'image.png',
+            };
+            imageFormData.append('image', file);
+          });
+        } else {
+          // 아닌 경우(1개 일때)
+          let file = {
+            uri: image.path,
+            type: 'image/jpeg',
+            name: 'image.png',
+          };
+          imageFormData.append('image', file);
+        }
+        dispatch(imageUpLoad(imageFormData));
       })
       .catch(e => {
         alert(e);
@@ -102,6 +118,9 @@ const AddPost = ({route}) => {
   };
 
   // 카메라 열기
+  // 카메라는 찍은 사진들이 한번에 하나씩 image로 들어온다.
+  // 적당한 객체의 모양으로 만든다음에, 폼데이터 객체에 넣어서 보내준다.
+  // FormData는 유사배열이기 때문에, append()로 k-v쌍으로 v에 이미지 파일을 넣어준다고 보면 된다.
   const onCameraOpen = () => {
     ImagePicker.openCamera({
       cropping: true,
@@ -110,18 +129,10 @@ const AddPost = ({route}) => {
         const imageFormData = new FormData();
         let file = {
           uri: image.path,
-          type: 'multipart/form-data',
+          type: 'image/jpeg',
           name: 'image.png',
         };
         imageFormData.append('image', file);
-        // [].forEach.call(file, f => {
-        //   imageFormData.append('image', f);
-        // });
-        // image객체는 보다 많은 값을 갖지만 서버개설 전까지 필요한 id와 uri만 뽑아서 쓴다. 추후 변경.
-        // const uploadImage = {
-        //   id: Math.floor(Math.random() * 100),
-        //   uri: image.path,
-        // }; // i.path = 이미지주소의 string
         dispatch(imageUpLoad(imageFormData));
       })
       .catch(e => {

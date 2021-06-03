@@ -44,9 +44,7 @@ const MainPost = ({route}) => {
   };
   // 초기 포스트 로드
   useEffect(() => {
-    dispatch(loadPostRequest(5));
-    // 로그인 대체 임시(추후 로그인 유지할 때, 세션에서 값을 가져오기로 하자.)
-    // dispatch(logInRequest({email: 'hans9102@gmail.com', password: '1234'}));
+    dispatch(loadPostRequest({lastId: 0}));
   }, []);
 
   // 인피니트 포스트 로드
@@ -59,7 +57,9 @@ const MainPost = ({route}) => {
   };
   const onScroll = () => {
     if (!posts.fullPost) {
-      dispatch(loadPostRequest(5));
+      const lastId = posts.mainPosts[posts.mainPosts.length - 1]?.id;
+      console.log(lastId);
+      dispatch(loadPostRequest({lastId}));
     }
   };
   return (
@@ -70,7 +70,7 @@ const MainPost = ({route}) => {
             onScroll();
           }
         }}
-        scrollEventThrottle={100}>
+        scrollEventThrottle={2000}>
         {posts.mainPosts.map(post => (
           <Post key={post.id} post={post} tab={'Post'} />
         ))}

@@ -27,6 +27,12 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING(30),
         allowNull: false,
       },
+      avatarUrl: {
+        type: DataTypes.STRING,
+      },
+      socialOnly: {
+        type: DataTypes.BOOLEAN,
+      },
     },
     {
       freezeTableName: true, // Post 모델의 이름을 변형 없이 테이블 이름으로 설정

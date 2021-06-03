@@ -5,7 +5,7 @@ module.exports = (sequelize, DataTypes) => {
   const Image = sequelize.define(
     "Image",
     {
-      src: {
+      uri: {
         type: DataTypes.STRING(200),
         allowNull: false, //필수
         unique: false,
@@ -26,4 +26,4 @@ module.exports = (sequelize, DataTypes) => {
 };
 
 // Image 모델 테이블의 이름 : Image
-// 칼럼 : id | src | PostId | createdAt | updatedAt | deletedAt |
+// 칼럼 : id | uri | PostId | createdAt | updatedAt | deletedAt |

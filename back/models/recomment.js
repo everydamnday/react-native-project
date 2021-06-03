@@ -24,7 +24,7 @@ module.exports = (sequelize, DataTypes) => {
   );
   Recomment.associate = (db) => {
     db.Recomment.belongsTo(db.User); // 유저가 쓴 리코멘트(N) => UserId 칼럼 생성
-    db.Recomment.belongsTo(db.Post); // 포스트에 달린 리코멘트(N) => PostId 칼럼 생성
+    db.Recomment.belongsTo(db.Comment); // 포스트에 달린 리코멘트(N) => PostId 칼럼 생성
     db.Recomment.belongsToMany(db.User, {
       through: "LikeRecomment",
       as: "RecommentLiker",
@@ -35,7 +35,7 @@ module.exports = (sequelize, DataTypes) => {
 };
 
 // Recomment 모델 테이블의 이름 : Recomment
-// 칼럼 : id | content | like | UserId | PostId | createdAt | updatedAt | deletedAt |
+// 칼럼 : id | content | like | UserId | CommentId | createdAt | updatedAt | deletedAt |
 
 // 중앙테이블( LikePost with User)
 // 칼럼 : RecommentLiker | LikedRecommentId

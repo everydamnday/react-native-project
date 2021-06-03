@@ -15,7 +15,8 @@ const app = express();
 
 //db연동
 db.sequelize
-  .sync() // 덮어쓰기 옵션(같은 이름의 테이블이 있으면 삭제 후 재생성한다. - 개발모드)
+  .sync()
+  // .sync({ force: true }) // 덮어쓰기 옵션(같은 이름의 테이블이 있으면 삭제 후 재생성한다. - 개발모드)
   .then(() => {
     console.log("✅ DB connection success!");
   })
@@ -34,6 +35,7 @@ app.use(cookieParser(process.env.COOKIE_SECRET));
 app.use(cors({ origin: true, credentials: true })); // 브라우저의 동일 도메인/포트 응답 거부 방지
 app.use(
   session({
+    // cookie: { maxAge: 60000 },
     secret: process.env.COOKIE_SECRET, //
     resave: false, //
     saveUninitialized: true,

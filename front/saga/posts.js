@@ -75,9 +75,10 @@ function* watchLoadPost() {
 function* loadpost(action) {
   console.log('loadpost의 실행');
   try {
-    // yield call(loadpostAPI, action.data);
+    const res = yield call(loadpostAPI, action.data);
     // yield delay(300);
-    yield put({type: LOAD_POST_SUCCESS, data: action.data}); // data = 5
+    console.log('가져온 객체의 모습', res.data);
+    yield put({type: LOAD_POST_SUCCESS, data: res.data}); // data = 5
   } catch (e) {
     console.log(e);
     yield put({type: LOAD_POST_FAILURE, error: e.response.data});
@@ -87,7 +88,7 @@ function* loadpost(action) {
 //API
 const loadpostAPI = data => {
   // data = {title, content, Images}
-  return axios.get('/posts');
+  return axios.get(`/post/posts/${data.lastId}`);
 };
 
 /////////////////////////////////////     AddPost      ///////////////////////////////////////////
@@ -125,7 +126,7 @@ function* watchEditPost() {
 function* editpost(action) {
   console.log('editpost의 실행');
   try {
-    // yield call(editpostAPI, action.data);
+    yield call(editpostAPI, action.data);
     // yield delay(1000);
     yield put({type: EDIT_POST_SUCCESS, data: action.data}); // data = {  postId, title, content, upLoadedImages }
   } catch (e) {
@@ -137,7 +138,7 @@ function* editpost(action) {
 //API
 const editpostAPI = data => {
   // data = {  postId, title, content, upLoadedImages }
-  return axios.post(`/post/${data.postId}/edit`, data);
+  return axios.post('/post/edit', data);
 };
 
 /////////////////////////////////////     DeletePost      ///////////////////////////////////////////
@@ -368,11 +369,11 @@ function* watchUploadImage() {
 }
 //액션 핸들러
 function* uploadimage(action) {
-  console.log('uploadimage의 실행');
   try {
-    const res = yield call(uploadimageAPI, action.data);
-    // yield delay(1000);
-    yield put({type: UPLOAD_IMAGE_SUCCESS, data: res.data}); // action.data =
+    const res = yield call(uploadimageAPI, action.data); // res로 s3접근 uri가 배열로 들어온다.
+    console.log('들어오는 모습', res.data);
+    // 1개일 때, res = ["https://sly-image-storage.s3.ap-northeast-2.amazonaws.com/original/1621403733783_image.png"]
+    yield put({type: UPLOAD_IMAGE_SUCCESS, data: res.data});
   } catch (e) {
     console.log(e);
     yield put({type: UPLOAD_IMAGE_FAILURE, error: e.response.data});

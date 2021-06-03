@@ -1,5 +1,6 @@
 const passport = require("passport");
 const { User } = require("../models");
+const user = require("../models/user");
 const local = require("./local");
 // const local = require('./local');
 
@@ -10,16 +11,18 @@ module.exports = () => {
     done(null, user.id); // 그리고 이를 req.session.passport.user = user.id로 저장한다.
   });
 
-  // 로그인 이후 매 요청마다 실행(
+  // 로그인 이후 매 요청마다 실행
   // 1 - express.session() 미들웨어가 실행되면서
   //     req.headers.cookie.connect.sid에서 암호화된 세션 id를 조회하고
-  //     req.sessionID안에 암호화된 세션 id를 복호화 한 실제 세션 id를 넣어준다.
-
-  //     passport.initialize()에 의해 req.session.passport.user를 조회한다.
-  //     user가 있다면, 여기에 있는 id의 값을 deserializeUser의 인자로 전달한다.
+  //     스토어에서 해당 세션 id를 찾는다. req.session 객체를 초기화 하고 다.
+  // 2 - passport.initialize()는 req.session.passport.user를 조회하고
+  //     req.__passport.user에 할당한다.
+  // 3 - passport.session() req.__passport.user에 할당된 값을
+  //     아래 id 인자로 전달하여 deserializeUser를 실행한다.
+  //     그리고 복원된 user를 req.user에 최종적으로 할당한다.
   passport.deserializeUser(async (id, done) => {
     try {
-      const user = await User.findOne({ where: { id: 1 } });
+      const user = await User.findOne({ where: { id } });
       done(null, user); // req.user가 생긴다.
     } catch (error) {
       console.error(error);

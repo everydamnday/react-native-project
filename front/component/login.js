@@ -10,12 +10,21 @@ import {
 import {useDispatch, useSelector} from 'react-redux';
 import styled from 'styled-components/native';
 import useInput from '../hooks/useInput';
-import {logInRequest, loginRequest, LOG_IN_REQUEST} from '../reducers/user';
+import {
+  kakaoLoginRequest,
+  logInRequest,
+  loginRequest,
+  logOutRequest,
+  LOG_IN_REQUEST,
+} from '../reducers/user';
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
 } from 'react-native-responsive-screen';
 import {useNavigation} from '@react-navigation/native';
+import axios from 'axios';
+import {login, setResult} from '@react-native-seoul/kakao-login';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const LoginContainer = styled.View`
   flex: 1;
@@ -116,10 +125,30 @@ const Login = () => {
   const onSignIn = useCallback(() => {
     navigation.navigate('SignIn');
   }, []);
-  // 소셜인증
-  const onAuthLogin = useCallback(() => {
-    console.log('소셜인증');
-  }, []);
+  // 로그아웃(임시)
+  const onAuthLogout = () => {
+    dispatch(logOutRequest());
+    const removeValue = async () => {
+      try {
+        await AsyncStorage.removeItem('sid');
+      } catch (e) {
+        console.error(e);
+      }
+    };
+    removeValue();
+  };
+  // 카카오 소셜인증
+  // const onAuthLoginKakao = useCallback(async () => {
+  //   console.log('누른다');
+  //   try {
+  //     const token = await getprofile();
+  //     console.log(JSON.stringify(token));
+  //   } catch (error) {
+  //     console.error(error);
+  //   }
+  //   // dispatch(kakaoLoginRequest());
+  // }, []);
+  const onAuthLogin = useCallback(() => {}, []);
   return (
     <LoginContainer>
       <View>
@@ -171,10 +200,15 @@ const Login = () => {
           <Text style={AuthLoginContainer.text}>카카오 로그인</Text>
         </TouchableOpacity>
         <TouchableOpacity
+          onPress={onAuthLogout}
+          style={AuthLoginContainer.naver}>
+          <Text style={AuthLoginContainer.text}>로그아웃</Text>
+        </TouchableOpacity>
+        {/* <TouchableOpacity
           onPress={onAuthLogin}
           style={AuthLoginContainer.signin}>
           <Text>회원가입하기</Text>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
       </View>
     </LoginContainer>
   );

@@ -13,6 +13,7 @@ const date = `${year}-${month}-${day}`;
 /////////////////////////////////////////////////     초기값    ///////////////////////////////////////////
 const initialState = {
   mainPosts: [],
+  fullPost: false,
   upLoadedImages: [], // 이미지 업로드를 위한 임시상태
   loadPostLoading: false, // 포스트 생성
   loadPostDone: false,
@@ -190,9 +191,9 @@ export const imageRemove = () => ({
 });
 
 /////////////////////////////////////////////////  더미생성기  ////////////////////////////////////////////
-const dummyLoadPost = number => {
+const dummyLoadPost = post => {
   return initialState.mainPosts.concat(
-    Array(number)
+    Array(5)
       .fill()
       .map((v, i) => ({
         id: shortId.generate(),
@@ -329,8 +330,8 @@ const posts = (state = initialState, action) => {
       case LOAD_POST_SUCCESS:
         draft.loadPostLoading = false;
         draft.loadPostDone = true;
-        draft.mainPosts = draft.mainPosts.concat(dummyLoadPost(action.data)); // 배열의 앞에다 넣는다.
-        draft.fullPost = draft.mainPosts.length >= 30; // 30개 이상일 때 더 이상 불러오지 않음.
+        draft.mainPosts = draft.mainPosts.concat(action.data); // 배열의 앞에다 넣는다.
+        draft.fullPost = draft.mainPosts.length >= 30; // 30개 이상일 때 fullPost = true 가 되면서 인피니트 스크롤 중지.
         break;
       case LOAD_POST_FAILURE:
         draft.loadPostLoading = false;
@@ -347,7 +348,7 @@ const posts = (state = initialState, action) => {
         draft.addPostLoading = false;
         draft.addPostDone = true;
         draft.upLoadedImages = [];
-        draft.mainPosts.unshift(dummyPost(action.data)); // 배열의 앞에다 넣는다.
+        draft.mainPosts.unshift(action.data); // 배열의 앞에다 넣는다.
         break;
       case ADD_POST_FAILURE:
         draft.addPostLoading = false;
@@ -365,7 +366,7 @@ const posts = (state = initialState, action) => {
         draft.editPostDone = true;
         draft.upLoadedImages = [];
         const editPostIndex = draft.mainPosts.findIndex(
-          p => p.id === action.data.postId,
+          p => p.id === action.data.id,
         );
         draft.mainPosts[editPostIndex] = dummyPost(action.data);
         break;
@@ -581,11 +582,7 @@ const posts = (state = initialState, action) => {
       case UPLOAD_IMAGE_SUCCESS:
         draft.uploadImageLoading = false;
         draft.uploadImageDone = true;
-        if (Array.isArray(action.data)) {
-          draft.upLoadedImages = draft.upLoadedImages.concat(action.data);
-        } else {
-          draft.upLoadedImages.push(action.data); // => [].push([이미지 객체의 배열]) // 마지막에 넣는다.
-        }
+        draft.upLoadedImages = draft.upLoadedImages.concat(action.data);
         break;
       case UPLOAD_IMAGE_FAILURE:
         draft.uploadImageLoading = false;

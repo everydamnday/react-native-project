@@ -27,10 +27,18 @@ const TopOfPost = StyleSheet.create({
     borderWidth: 0.5,
     borderColor: '#20232a',
   },
+  head: {
+    width: window.innerWidth,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
   title: {
     fontSize: 25,
     fontWeight: '500',
     margin: 10,
+  },
+  ellipsis: {
+    padding: 20,
   },
   content: {
     fontSize: 15,
@@ -142,13 +150,13 @@ const Post = ({post, tab}) => {
   return (
     <PostContainer>
       <View style={TopOfPost.container}>
-        <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
+        <View style={TopOfPost.head}>
           <TouchableOpacity onPress={gotoDetail(post)}>
             <Text style={TopOfPost.title}>{post.title}</Text>
           </TouchableOpacity>
           <TouchableOpacity onPress={popUpOpen}>
             <Ionicons
-              style={{padding: 20}}
+              style={TopOfPost.ellipsis}
               name="ellipsis-horizontal-outline"
               size={15}
             />
