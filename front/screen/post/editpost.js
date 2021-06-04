@@ -89,16 +89,13 @@ const EditPost = ({route}) => {
   );
   const [title, onChangeTitle, setTitle] = useInput(targetPost.title);
   const [content, onChangeContent, setContent] = useInput(targetPost.content);
-  const [images, onChangeImages, setImages] = useInput(targetPost.Images);
   const dispatch = useDispatch();
-  // const upLoadedImages = useSelector(state => state.posts.upLoadedImages);
+  const upLoadedImages = useSelector(state => state.posts.upLoadedImages);
 
   // 기존 데이터를 넣기
   useEffect(() => {
-    // setTitle(targetPost.title);
-    // setContent(targetPost.content);
-    // console.log(targetPost.Images);
-    // dispatch(imageUpLoad(targetPost.Images));
+    console.log(targetPost.Images);
+    dispatch(imageUpLoad(targetPost.Images)); // = [{id: ~, uri: ~}, {id: ~, uri: ~}...]
   }, []);
 
   // 카메라 앨범 열기
@@ -118,7 +115,6 @@ const EditPost = ({route}) => {
               name: 'image.png',
             };
             imageFormData.append('image', file);
-            setImages([...images, {uri: i.path}]);
           });
         } else {
           // 아닌 경우(1개 일때)
@@ -128,7 +124,6 @@ const EditPost = ({route}) => {
             name: 'image.png',
           };
           imageFormData.append('image', file);
-          setImages([...images, {uri: image.path}]);
         }
         dispatch(imageUpLoad(imageFormData));
       })
@@ -151,7 +146,6 @@ const EditPost = ({route}) => {
         };
         imageFormData.append('image', file);
         dispatch(imageUpLoad(imageFormData));
-        setImages([...images, {uri: image.path}]);
       })
       .catch(e => {
         alert(e);
@@ -163,7 +157,6 @@ const EditPost = ({route}) => {
     ImagePicker.clean()
       .then(() => {
         dispatch(imageRemove()); // 업로드된 이미지 상태 제거
-        setImages(''); // 첨부된 이미지 상태 제거
       })
       .catch(e => {
         alert(e);
@@ -179,13 +172,12 @@ const EditPost = ({route}) => {
         postId,
         title,
         content,
-        images,
+        upLoadedImages,
       }),
     ); // 작성된 내용을 dispatch
     // 이후 상태 초기화
     setTitle('');
     setContent('');
-    setImages([]);
   };
 
   return (
@@ -225,9 +217,9 @@ const EditPost = ({route}) => {
               onChange={onChangeContent}
             />
           </View>
-          {images[0] && (
+          {upLoadedImages[0] && (
             <View style={Editpost.inputimage}>
-              <PostImages images={images} />
+              <PostImages images={upLoadedImages} />
             </View>
           )}
         </View>

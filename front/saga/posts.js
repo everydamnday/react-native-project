@@ -126,9 +126,9 @@ function* watchEditPost() {
 function* editpost(action) {
   console.log('editpost의 실행');
   try {
-    yield call(editpostAPI, action.data);
+    const res = yield call(editpostAPI, action.data);
     // yield delay(1000);
-    yield put({type: EDIT_POST_SUCCESS, data: action.data}); // data = {  postId, title, content, upLoadedImages }
+    yield put({type: EDIT_POST_SUCCESS, data: res.data}); // data = {  postId, title, content, upLoadedImages }
   } catch (e) {
     console.log(e);
     yield put({type: EDIT_POST_FAILURE, error: e.response.data});
@@ -370,10 +370,17 @@ function* watchUploadImage() {
 //액션 핸들러
 function* uploadimage(action) {
   try {
-    const res = yield call(uploadimageAPI, action.data); // res로 s3접근 uri가 배열로 들어온다.
-    console.log('들어오는 모습', res.data);
-    // 1개일 때, res = ["https://sly-image-storage.s3.ap-northeast-2.amazonaws.com/original/1621403733783_image.png"]
-    yield put({type: UPLOAD_IMAGE_SUCCESS, data: res.data});
+    // data = []일때는 기존첨부사진 or 유사배열일때는 새로첨부된사진
+    if (Array.isArray(action.data)) {
+      // 배열일 때는 업로드하지 않음
+      yield put({type: UPLOAD_IMAGE_SUCCESS, data: action.data});
+    } else {
+      // 유사배열일 때 업로드 함
+      const res = yield call(uploadimageAPI, action.data); // res로 s3접근 uri가 배열로 들어온다.
+      console.log('들어오는 모습', res.data);
+      // 1개일 때, res = [{ uri : "https://sly-image-storage.s3.ap-northeast-2.amazonaws.com/original/1621403733783_image.png"]
+      yield put({type: UPLOAD_IMAGE_SUCCESS, data: res.data});
+    }
   } catch (e) {
     console.log(e);
     yield put({type: UPLOAD_IMAGE_FAILURE, error: e.response.data});

@@ -12,25 +12,16 @@ require("dotenv").config();
 
 // 포스트 라우터
 
-//이미지 저장을 위한 임시 스토리지 생성 XXXXXXXXXXXXXXXXXXXX => S3 로 대체됨
-// try {
-//   fs.accessSync("uploads");
-// } catch (error) {
-//   console.log("uploads 폴더가 없으므로 생성합니다.");
-//   fs.mkdirSync("uploads");
-// }
 // 게시글 불러오기
 router.get(`/posts/:lastId`, async (req, res, next) => {
   try {
     const where = {};
     const { lastId } = req.params; // string
-    console.log("최신 아이디", lastId);
     if (parseInt(lastId, 10) !== 0) {
       where.id = { [Op.lt]: parseInt(lastId, 10) };
-      console.log("조회 아이디", where.id);
     }
-    // 15개 포스트가 있을 때,
-    // 첫 요청: 14, 13, 12(lastId)
+    // 15개 포스트(0~14, DESC)가 있을 때,
+    // 첫 요청: 14, 13, 12(lastId) : 첫요청은 where가 없다. 따라서 최신순에서 3개만 불러온다.
     // 둘째 요청: 11, 10, 9 ([Op.lt]: lastId =>  all < 12, limit 3)
     const posts = await Post.findAll({
       where,
@@ -39,29 +30,7 @@ router.get(`/posts/:lastId`, async (req, res, next) => {
         ["createdAt", "DESC"],
         [Comment, "createdAt", "DESC"],
       ],
-      include: [
-        { model: User, attributes: ["id", "nickname"] },
-        {
-          model: Comment,
-          attributes: ["id", "content"],
-          include: [
-            { model: User, attributes: ["id", "nickname"] }, // 코멘트 작성자
-            { model: Post, attributes: ["id"] }, // 코멘트가 달린 포스트
-            { model: User, as: "CommentLiker", attributes: ["id"] }, // 코멘트를 좋아요 한 유저
-            {
-              model: Recomment,
-              attributes: ["id", "content"],
-              include: [
-                { model: User, attributes: ["id", "nickname"] }, // 리코멘트 작성자
-                { model: Comment, attributes: ["id"] }, // 리코멘트가 달린 코멘트
-                { model: User, as: "RecommentLiker", attributes: ["id"] }, // 리코멘트를 좋아요 한 유저
-              ],
-            },
-          ],
-        },
-        { model: User, as: "PostLiker", attributes: ["id"] }, // 포스트를 좋아요한 유저
-        { model: Image, attributes: ["id", "uri"] }, // 포스트에 달린 이미지
-      ],
+      include: standard_include,
     });
     return res.status(200).json(posts);
   } catch (error) {
@@ -89,25 +58,12 @@ router.post("/add", async (req, res, next) => {
       const images = await Promise.all(
         upLoadedImages.map((image) => Image.create({ uri: image.uri }))
       );
-      await post.addImage(images);
+      await post.addImages(images); // 이미지가 배열이든 아니든 addImages나 addImage 둘다 된다.
     }
     // 보내줄 포스트 객체 조회
     const fullPost = await Post.findOne({
       where: { id: post.id },
-      include: [
-        { model: Image },
-        {
-          model: Comment,
-          include: [
-            {
-              model: User,
-              attributes: ["id", "nickname"],
-            },
-          ],
-        },
-        { model: User, attributes: ["id", "nickname"] },
-        { model: User, as: "PostLiker", attributes: ["id"] },
-      ],
+      include: standard_include,
     });
     // console.log(fullPost);
     return res.status(200).send(fullPost);
@@ -143,39 +99,26 @@ router.post("/images", upload.array("image"), async (req, res, next) => {
 });
 
 // 포스트 수정하기
-// 수정내용 db 업데이트 => 수정된 post 객체 내보내기
+// 수정내용, 이미지 업데이트 => 수정된 post와 image 조인 => 수정된 fullpost 객체 내보내기
 router.post("/edit", async (req, res, next) => {
-  const { postId, title, content, images } = req.body;
-  console.log(content);
+  const { postId, title, content, upLoadedImages } = req.body;
+  const newAddedImages = upLoadedImages.filter((v) => v?.id === undefined);
   // 포스트 업데이트
   try {
-    const editedPost = await Post.update(
-      { where: { id: postId } },
-      { title, content }
+    await Post.update(
+      { title: title, content: content },
+      { where: { id: postId } }
     );
-    // 이미지 저장(기존에 있는거면 냅두고 새로우면 저장 = findandCreate)
-    if (images) {
-      const images = await Promise.all(
-        images.map((image) => Image.findOrCreate({ uri: image.uri }))
+    const post = await Post.findOne({ where: { id: postId } });
+    if (newAddedImages) {
+      const Images = await Promise.all(
+        newAddedImages.map((image) => Image.create({ uri: image.uri }))
       );
+      await post.addImages(Images); // addImages not addImage 왜냐하면 Images는 Image 인스턴스 배열이니까
     }
-    // full post 꺼내기
     const fullPost = await Post.findOne({
-      where: { id: editedPost.id },
-      include: [
-        { model: Image },
-        {
-          model: Comment,
-          include: [
-            {
-              model: User,
-              attributes: ["id", "nickname"],
-            },
-          ],
-        },
-        { model: User, attributes: ["id", "nickname"] },
-        { model: User, as: "PostLiker", attributes: ["id"] },
-      ],
+      where: { id: post.id },
+      include: standard_include,
     });
     return res.status(200).send(fullPost);
   } catch (error) {
@@ -185,3 +128,36 @@ router.post("/edit", async (req, res, next) => {
 });
 
 module.exports = router;
+
+//이미지 저장을 위한 임시 메모리 스토리지 생성 XXXXXXXXXXXXXXXXXXXX => S3 로 대체됨
+// try {
+//   fs.accessSync("uploads");
+// } catch (error) {
+//   console.log("uploads 폴더가 없으므로 생성합니다.");
+//   fs.mkdirSync("uploads");
+// }
+
+// 표준 Post테이블 조인 모델 : include
+const standard_include = [
+  { model: User, attributes: ["id", "nickname"] },
+  {
+    model: Comment,
+    attributes: ["id", "content"],
+    include: [
+      { model: User, attributes: ["id", "nickname"] }, // 코멘트 작성자
+      { model: Post, attributes: ["id"] }, // 코멘트가 달린 포스트
+      { model: User, as: "CommentLiker", attributes: ["id"] }, // 코멘트를 좋아요 한 유저
+      {
+        model: Recomment,
+        attributes: ["id", "content"],
+        include: [
+          { model: User, attributes: ["id", "nickname"] }, // 리코멘트 작성자
+          { model: Comment, attributes: ["id"] }, // 리코멘트가 달린 코멘트
+          { model: User, as: "RecommentLiker", attributes: ["id"] }, // 리코멘트를 좋아요 한 유저
+        ],
+      },
+    ],
+  },
+  { model: User, as: "PostLiker", attributes: ["id"] }, // 포스트를 좋아요한 유저
+  { model: Image, attributes: ["id", "uri"] }, // 포스트에 달린 이미지
+];

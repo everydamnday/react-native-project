@@ -368,7 +368,7 @@ const posts = (state = initialState, action) => {
         const editPostIndex = draft.mainPosts.findIndex(
           p => p.id === action.data.id,
         );
-        draft.mainPosts[editPostIndex] = dummyPost(action.data);
+        draft.mainPosts[editPostIndex] = action.data;
         break;
       case EDIT_POST_FAILURE:
         draft.editPostLoading = false;
