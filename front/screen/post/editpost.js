@@ -6,6 +6,7 @@ import {
   TextInput,
   TouchableOpacity,
   Image,
+  Button,
   ScrollView,
 } from 'react-native';
 import styled from 'styled-components/native';
@@ -92,11 +93,22 @@ const EditPost = ({route}) => {
   const dispatch = useDispatch();
   const upLoadedImages = useSelector(state => state.posts.upLoadedImages);
 
+  const navigation = useNavigation();
   // 기존 데이터를 넣기
   useEffect(() => {
-    console.log(targetPost.Images);
     dispatch(imageUpLoad(targetPost.Images)); // = [{id: ~, uri: ~}, {id: ~, uri: ~}...]
-  }, []);
+    navigation.setOptions({
+      headerLeft: () => (
+        <Button
+          onPress={() => {
+            navigation.goBack();
+            dispatch(imageRemove());
+          }}
+          title="<"
+        />
+      ),
+    });
+  }, [navigation]);
 
   // 카메라 앨범 열기
   const onGalleryOpen = () => {
@@ -164,7 +176,6 @@ const EditPost = ({route}) => {
   };
 
   // 수정 게시하기
-  const navigation = useNavigation();
   const onSubmit = () => {
     navigation.navigate('Post'); // 메인포스트 페이지로 넘어가기
     dispatch(

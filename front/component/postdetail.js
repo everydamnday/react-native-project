@@ -221,9 +221,9 @@ const Detail = ({route, navigation}) => {
                 />
               </View>
             )}
-            {post.sharePostId && (
+            {post.SharePostId && (
               <SharePost
-                sharePostId={post.sharePostId}
+                sharePostId={post.SharePostId}
                 tab={route.params.tab}
               />
             )}

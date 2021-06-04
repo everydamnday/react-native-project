@@ -156,7 +156,7 @@ const AddPost = ({route}) => {
   const onSubmit = () => {
     navigation.navigate('Post'); // 메인포스트 페이지로 넘어가기
     if (sharePost) {
-      dispatch(sharePostRequest({title, content, sharePostId: postId}));
+      dispatch(sharePostRequest({title, content, sharePostId: sharePost.id}));
     } else {
       dispatch(addPostRequest({title, content, upLoadedImages})); // 작성된 내용을 dispatch
     }

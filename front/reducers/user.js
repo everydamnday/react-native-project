@@ -29,8 +29,9 @@ export const LOG_OUT_FAILURE = 'LOG_OUT_FAILURE';
 export const ADD_BOOKMARK_REQUEST = 'ADD_BOOKMARK_REQUEST';
 export const ADD_BOOKMARK_SUCCESS = 'ADD_BOOKMARK_SUCCESS';
 export const ADD_BOOKMARK_FAILURE = 'ADD_BOOKMARK_FAILURE';
-// 내 포스트
+// 내 포스트 REMOVE_POST_TO_ME
 export const ADD_POST_TO_ME = 'ADD_POST_TO_ME';
+export const REMOVE_POST_TO_ME = 'REMOVE_POST_TO_ME';
 
 /////////////////////////////////////////////////     초기값    ///////////////////////////////////////////
 const initialState = {
@@ -209,6 +210,9 @@ const user = (state = initialState, action) => {
 
       case ADD_POST_TO_ME:
         draft.me.PostsId.push(action.data);
+        break;
+      case REMOVE_POST_TO_ME:
+        draft.me.PostsId = draft.me.PostsId.filter(v => v !== action.data);
         break;
       default:
         break;

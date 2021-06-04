@@ -118,7 +118,7 @@ const BottomOfPost = StyleSheet.create({
 // const offLike = 'thumbs-up-outline';
 
 const Post = ({post, tab}) => {
-  const me = useSelector(state => state.user.me); // 포스트에서 유저가 할 수 있는 일 구분
+  // const me = useSelector(state => state.user.me); // 포스트에서 유저가 할 수 있는 일 구분
   const dispatch = useDispatch();
 
   // 디테일로 넘어가기
@@ -187,8 +187,8 @@ const Post = ({post, tab}) => {
             <PostImage style={TopOfPost.images} images={post.Images} />
           </View>
         )}
-        {post.sharePostId && (
-          <SharePost sharePostId={post.sharePostId} tab={tab} />
+        {post.SharePostId && (
+          <SharePost sharePostId={post.SharePostId} tab={tab} />
         )}
         <Text style={TopOfPost.userinfo}>
           {post.User.nickname} / {post.User.brand} / {post.User.region}

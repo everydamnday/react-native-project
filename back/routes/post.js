@@ -129,11 +129,52 @@ router.post("/edit", async (req, res, next) => {
 });
 
 // 포스트 삭제하기
+// db에서 삭제하기 => 삭제한 postId 내보내기
 router.delete("/:postId", async (req, res, next) => {
   const { postId } = req.params;
   try {
     await Post.destroy({ where: { id: postId } });
     return res.status(200).json({ postId: parseInt(postId, 10) });
+  } catch (error) {
+    console.error(error);
+    return next(error);
+  }
+});
+
+// 포스트 공유하기
+// 공유한 포스트 저장 => 공유 대상 포스트를 찾아서 조인 =>
+// 유효성 검사 : 존재하는 포스트? / 내 포스트?
+router.post("/share", async (req, res, next) => {
+  const { title, content, sharePostId } = req.body;
+  try {
+    const TargetPost = await Post.findOne({
+      where: { id: sharePostId },
+      include: [{ model: Post, as: "SharePost" }],
+    });
+    // 존재하지 않는 포스트인지?
+    if (!TargetPost) {
+      return res.status(403).send("존재하지 않는 게시글 입니다.");
+    }
+    // 내가 쓴 글이거나, 내가 쓴걸 공유한 글인지?
+    if (
+      req.user.id === TargetPost.UserId ||
+      (TargetPost.SharePostId && req.user.id === TargetPost.SharePostId.UserId)
+    ) {
+      return res.status(403).send("내가 쓴 글은 공유할 수 없습니다.");
+    }
+    // 이미 리트윗 했는지? => 필요한가?
+    // 이제 저장
+    const sharePost = await Post.create({
+      title,
+      content,
+      UserId: req.user.id,
+      SharePostId: sharePostId,
+    });
+    const fullpost = await Post.findOne({
+      where: { id: sharePost.id },
+      include: standard_include,
+    });
+    return res.status(200).send(fullpost);
   } catch (error) {
     console.error(error);
     return next(error);
@@ -172,5 +213,6 @@ const standard_include = [
     ],
   },
   { model: User, as: "PostLiker", attributes: ["id"] }, // 포스트를 좋아요한 유저
+  { model: Post, as: "SharePost", attributes: ["id"] }, // 공유한 대상이 되는 포스트
   { model: Image, attributes: ["id", "uri"] }, // 포스트에 달린 이미지
 ];

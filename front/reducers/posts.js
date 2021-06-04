@@ -185,7 +185,7 @@ export const imageUpLoad = data => ({
   type: UPLOAD_IMAGE_REQUEST,
   data,
 }); // data = uploadImage = [이미지 객체의 배열]
-// 업로드 이미지 제거(동기)
+// 업로드 이미지 제거(단순 초기화)
 export const imageRemove = () => ({
   type: REMOVE_IMAGE,
 });
@@ -402,7 +402,7 @@ const posts = (state = initialState, action) => {
       case SHARE_POST_SUCCESS:
         draft.sharePostLoading = false;
         draft.sharePostDone = true;
-        draft.mainPosts.unshift(dummyPost(action.data)); // 배열의 앞에다 넣는다.
+        draft.mainPosts.unshift(action.data); // 배열의 앞에다 넣는다. push는 뒤에다.
         // 기존 리트윗보다 상세하게 만들 필요..
         // draft.mainPosts = draft.mainPosts.filter(p => p.id !== action.postId);
         break;

@@ -40,12 +40,9 @@ import {
   UPLOAD_IMAGE_REQUEST,
   UPLOAD_IMAGE_SUCCESS,
   UPLOAD_IMAGE_FAILURE,
-  REMOVE_IMAGE_SUCCESS,
-  REMOVE_IMAGE_FAILURE,
-  REMOVE_IMAGE_REQUEST,
 } from '../reducers/posts';
 import axios from 'axios';
-import {ADD_POST_TO_ME} from '../reducers/user';
+import {ADD_POST_TO_ME, REMOVE_POST_TO_ME} from '../reducers/user';
 
 //포스트 사가
 export default function* postSaga() {
@@ -77,7 +74,6 @@ function* loadpost(action) {
   try {
     const res = yield call(loadpostAPI, action.data);
     // yield delay(300);
-    console.log('가져온 객체의 모습', res.data);
     yield put({type: LOAD_POST_SUCCESS, data: res.data}); // data = 5
   } catch (e) {
     console.log(e);
@@ -154,6 +150,7 @@ function* deletepost(action) {
     // yield delay(1000);
     console.log(action.data);
     yield put({type: DELETE_POST_SUCCESS, data: res.data}); // data = { postId : (int타입정수) }
+    yield put({type: REMOVE_POST_TO_ME, data: res.data});
   } catch (e) {
     console.log(e);
     yield put({type: DELETE_POST_FAILURE, error: e});
@@ -175,9 +172,10 @@ function* watchSharePost() {
 function* sharepost(action) {
   console.log('sharepost의 실행');
   try {
-    // yield call(sharepostAPI, action.data);
+    const res = yield call(sharepostAPI, action.data);
     // yield delay(1000);
-    yield put({type: SHARE_POST_SUCCESS, data: action.data}); // data = {title, content, sharePostId : postId}
+    yield put({type: SHARE_POST_SUCCESS, data: res.data});
+    yield put({type: ADD_POST_TO_ME, data: res.data.id});
   } catch (e) {
     console.log(e);
     yield put({type: SHARE_POST_FAILURE, error: e.response.data});
@@ -186,8 +184,8 @@ function* sharepost(action) {
 
 //API
 const sharepostAPI = data => {
-  // data = {title, content, Images}
-  return axios.post(`/post/${data.postId}/share`, data);
+  // data = {title, content, sharePostId : sharePost.id }
+  return axios.post('/post/share', data);
 };
 
 /////////////////////////////////////     AddComment      ///////////////////////////////////////////
