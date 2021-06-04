@@ -150,9 +150,10 @@ function* watchDeletePost() {
 function* deletepost(action) {
   console.log('deletepost의 실행');
   try {
-    // yield call(deletepostAPI, action.data);
+    const res = yield call(deletepostAPI, action.data);
     // yield delay(1000);
-    yield put({type: DELETE_POST_SUCCESS, data: action.data}); // data = { postId : post.id }
+    console.log(action.data);
+    yield put({type: DELETE_POST_SUCCESS, data: res.data}); // data = { postId : (int타입정수) }
   } catch (e) {
     console.log(e);
     yield put({type: DELETE_POST_FAILURE, error: e});
@@ -161,7 +162,7 @@ function* deletepost(action) {
 
 //API
 const deletepostAPI = data => {
-  // data = {title, content, Images}
+  // data = { postId : (int타입 정수) }
   return axios.delete(`/post/${data.postId}`);
 };
 

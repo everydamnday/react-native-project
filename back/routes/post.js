@@ -40,6 +40,7 @@ router.get(`/posts/:lastId`, async (req, res, next) => {
 });
 
 // 게시글 작성
+// 포스트 내용 저장 => 이미지 저장 => full객체 응답
 router.post("/add", async (req, res, next) => {
   console.log("req.session", req.session);
   const { title, content, upLoadedImages } = req.body;
@@ -121,6 +122,18 @@ router.post("/edit", async (req, res, next) => {
       include: standard_include,
     });
     return res.status(200).send(fullPost);
+  } catch (error) {
+    console.error(error);
+    return next(error);
+  }
+});
+
+// 포스트 삭제하기
+router.delete("/:postId", async (req, res, next) => {
+  const { postId } = req.params;
+  try {
+    await Post.destroy({ where: { id: postId } });
+    return res.status(200).json({ postId: parseInt(postId, 10) });
   } catch (error) {
     console.error(error);
     return next(error);
