@@ -78,32 +78,32 @@ const SharePost = ({sharePostId, tab}) => {
       <View style={TopOfSharePost.container}>
         <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
           <TouchableOpacity onPress={gotoDetail}>
-            <Text style={TopOfSharePost.title}>{sharePost.title}</Text>
+            <Text style={TopOfSharePost.title}>{sharePost?.title}</Text>
           </TouchableOpacity>
         </View>
         <TouchableOpacity onPress={gotoDetail}>
           <View style={TopOfSharePost.content}>
-            {sharePost.content.length > 30 ? (
+            {sharePost?.content.length > 30 ? (
               <>
-                <Text>{`${sharePost.content.slice(0, 30)}`}</Text>
+                <Text>{`${sharePost?.content.slice(0, 30)}`}</Text>
                 <Text style={TopOfSharePost.more}>...더보기</Text>
               </>
             ) : (
-              <Text>{sharePost.content}</Text>
+              <Text>{sharePost?.content}</Text>
             )}
           </View>
         </TouchableOpacity>
-        {sharePost.Images?.[0] && (
+        {sharePost?.Images?.[0] && (
           <View style={TopOfSharePost.imageContainer}>
             <PostImage
               style={TopOfSharePost.images}
-              images={sharePost.Images}
+              images={sharePost?.Images}
             />
           </View>
         )}
         <Text style={TopOfSharePost.userinfo}>
-          {sharePost.User.nickname} / {sharePost.User.brand} /
-          {sharePost.User.region}
+          {sharePost?.User.nickname} / {sharePost?.User.brand} /
+          {sharePost?.User.region}
         </Text>
       </View>
     </SharePostContainer>

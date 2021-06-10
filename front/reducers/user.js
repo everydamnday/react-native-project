@@ -29,8 +29,17 @@ export const LOG_OUT_FAILURE = 'LOG_OUT_FAILURE';
 export const ADD_BOOKMARK_REQUEST = 'ADD_BOOKMARK_REQUEST';
 export const ADD_BOOKMARK_SUCCESS = 'ADD_BOOKMARK_SUCCESS';
 export const ADD_BOOKMARK_FAILURE = 'ADD_BOOKMARK_FAILURE';
-// 내 포스트 REMOVE_POST_TO_ME
+// 북마크 디시리얼라이즈
+export const DESERIALIZE_BOOKMARK_REQUEST = 'DESERIALIZE_BOOKMARK_REQUEST';
+export const DESERIALIZE_BOOKMARK_SUCCESS = 'DESERIALIZE_BOOKMARK_SUCCESS';
+export const DESERIALIZE_BOOKMARK_FAILURE = 'DESERIALIZE_BOOKMARK_FAILURE';
+// 내 포스트
 export const ADD_POST_TO_ME = 'ADD_POST_TO_ME';
+// 내 포스트 디시리얼라이즈
+export const DESERIALIZE_MYPOST_REQUEST = 'DESERIALIZE_MYPOST_REQUEST';
+export const DESERIALIZE_MYPOST_SUCCESS = 'DESERIALIZE_MYPOST_SUCCESS';
+export const DESERIALIZE_MYPOST_FAILURE = 'DESERIALIZE_MYPOST_FAILURE';
+// 포스트 삭제
 export const REMOVE_POST_TO_ME = 'REMOVE_POST_TO_ME';
 
 /////////////////////////////////////////////////     초기값    ///////////////////////////////////////////
@@ -53,6 +62,12 @@ const initialState = {
   addBookMarkLoading: false, // 북마크
   addBookMarkDone: false,
   addBookMarkError: null,
+  deserializeBookMarkLoading: false, // 북마크 디시리얼라이즈
+  deserializeBookMarkDone: false,
+  deserializeBookMarkError: null,
+  deserializeMyPostLoading: false, // 내 포스트 디시리얼라이즈
+  deserializeMyPostDone: false,
+  deserializeMyPostError: null,
 };
 
 //////////////////////////////////////////////  액션 크리에이터  //////////////////////////////////////////////
@@ -84,9 +99,17 @@ export const addBookMarkRequest = data => ({
   type: ADD_BOOKMARK_REQUEST,
   data,
 }); // data = post.id
+export const deserializeBookmark = data => ({
+  type: DESERIALIZE_BOOKMARK_REQUEST,
+  data,
+});
 // 내 포스트 addPostToMe
 export const addPostToMe = data => ({
   type: ADD_POST_TO_ME,
+  data,
+});
+export const deserializeMyPost = data => ({
+  type: DESERIALIZE_MYPOST_REQUEST,
   data,
 });
 
@@ -101,9 +124,9 @@ const dummyUser = data => {
     // password: data.password,
     createdAt: data.createdAt,
     PostsId: data.Posts,
-    CommentId: data.Comment,
-    RecommentId: data.Recomment,
-    bookmarkId: data.Bookmarked,
+    Comments: data.Comment,
+    Recomments: data.Recomment,
+    Bookmarked: [],
   };
 };
 
@@ -154,7 +177,7 @@ const user = (state = initialState, action) => {
       case LOG_IN_SUCCESS:
         draft.logInLoading = false;
         draft.logInDone = true;
-        draft.me = dummyUser(action.data);
+        draft.me = action.data;
         break;
       case LOG_IN_FAILURE:
         draft.logInLoading = false;
@@ -201,18 +224,49 @@ const user = (state = initialState, action) => {
       case ADD_BOOKMARK_SUCCESS:
         draft.addBookMarkLoading = false;
         draft.addBookMarkDone = true;
-        draft.me.bookmarkId.push(action.data);
+        draft.me.Bookmarked.push(action.data);
         break;
       case ADD_BOOKMARK_FAILURE:
         draft.addBookMarkLoading = false;
         draft.addBookMarkError = action.error;
         break;
-
-      case ADD_POST_TO_ME:
-        draft.me.PostsId.push(action.data);
+      ///////////////////////////////// DESERIALIZE_BOOKMARK ////////////////////////////////
+      case DESERIALIZE_BOOKMARK_REQUEST:
+        draft.deserializeBookMarkLoading = true;
+        draft.deserializeBookMarkDone = false;
+        draft.deserializeBookMarkError = null;
         break;
+      case DESERIALIZE_BOOKMARK_SUCCESS:
+        draft.deserializeBookMarkLoading = false;
+        draft.deserializeBookMarkDone = true;
+        draft.me.Bookmarked = action.data;
+        break;
+      case DESERIALIZE_BOOKMARK_FAILURE:
+        draft.deserializeBookMarkLoading = false;
+        draft.deserializeBookMarkError = action.error;
+        break;
+      /////////////////////////////////   ADD_POST_TO_ME    /////////////////////////////////
+      case ADD_POST_TO_ME:
+        draft.me.Posts.push(action.data);
+        break;
+      ///////////////////////////////// DESERIALIZE_MYPOST ////////////////////////////////
+      case DESERIALIZE_MYPOST_REQUEST:
+        draft.deserializeMyPostLoading = true;
+        draft.deserializeMyPostDone = false;
+        draft.deserializeMyPostError = null;
+        break;
+      case DESERIALIZE_MYPOST_SUCCESS:
+        draft.deserializeMyPostLoading = false;
+        draft.deserializeMyPostDone = true;
+        draft.me.Posts = action.data;
+        break;
+      case DESERIALIZE_MYPOST_FAILURE:
+        draft.deserializeMyPostLoading = false;
+        draft.deserializeMyPostError = action.error;
+        break;
+      /////////////////////////////////   REMOVE_POST_TO_ME   /////////////////////////////////
       case REMOVE_POST_TO_ME:
-        draft.me.PostsId = draft.me.PostsId.filter(v => v !== action.data);
+        draft.me.Posts = draft.me.Posts.filter(v => v !== action.data);
         break;
       default:
         break;

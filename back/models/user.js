@@ -65,7 +65,7 @@ module.exports = (sequelize, DataTypes) => {
       through: "Bookmark",
       as: "Bookmarked",
       foreignKey: "BookmarkerId",
-    }); // 유저가 북마크한 포스트(N) => BookmarkedId 칼럼 생성
+    }); // 유저가 북마크한 포스트(N) => 중앙테이블 BookmarkerId 칼럼 생성
   };
   return User;
 };
@@ -85,6 +85,6 @@ module.exports = (sequelize, DataTypes) => {
 // 칼럼 : RecommentLikerId | RecommentLikedId
 // UserId를 참조하는 외래키의 이름이 RecommentLikerId 된다.
 
-// 중앙테이블( Bookmark with Post)
+// 중앙테이블( Bookmark with Post) N:M
 // 칼럼 : BookmarkerId | BookmarkedId
 // UserId를 참조하는 외래키의 이름이 BookmarkerId 된다.

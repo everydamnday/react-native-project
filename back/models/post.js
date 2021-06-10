@@ -43,8 +43,8 @@ module.exports = (sequelize, DataTypes) => {
     db.Post.belongsToMany(db.User, {
       through: "Bookmark",
       as: "Bookmarker",
-      foreignKey: "BookmarkedId",
-    }); // 유저가 북마크한 포스트(M) => BookMarkerId 칼럼 생성
+      foreignKey: "BookmarkedId", // Post 테이블에서 지정할 포린키를 입력해라 가 아니라, 포린키는 PostId 인데 중앙테이블에서 이름을 어떻게 할거냐 임.
+    }); // 유저가 북마크한 포스트(M) => BookmarkedId 칼럼 생성
   };
   return Post;
 };
@@ -52,10 +52,10 @@ module.exports = (sequelize, DataTypes) => {
 // Post 모델 테이블의 이름 : Post
 // 칼럼 : id | title | content | see | like | UserId | SharePostId | createdAt | updatedAt | deletedAt
 
-// 중앙테이블( LikePost with User)
+// 중앙테이블( LikePost with User) 1:N(User)
 // 칼럼 : PostLikerId | LikedPostId
 // PostId를 참조하는 외래키의 이름이 LikedPostId 된다.
 
-// 중앙테이블( Bookmark with User)
+// 중앙테이블( Bookmark with User) N:M(Post)
 // 칼럼 : BookmarkerId | BookmarkedId
 // PostId를 참조하는 외래키의 이름이 BookmarkedId가 된다.

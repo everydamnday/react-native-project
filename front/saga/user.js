@@ -19,10 +19,15 @@ import {
   GET_USER_REQUEST,
   GET_USER_SUCCESS,
   GET_USER_FAILURE,
+  DESERIALIZE_BOOKMARK_REQUEST,
+  DESERIALIZE_BOOKMARK_SUCCESS,
+  DESERIALIZE_BOOKMARK_FAILURE,
+  DESERIALIZE_MYPOST_REQUEST,
+  DESERIALIZE_MYPOST_SUCCESS,
+  DESERIALIZE_MYPOST_FAILURE,
 } from '../reducers/user';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import typecheck from 'type-check';
 
 // 유저 사가
 export default function* userSaga() {
@@ -33,6 +38,8 @@ export default function* userSaga() {
     fork(watchKakaoLogIn),
     fork(watchLogOut),
     fork(watchBookMark),
+    fork(watchDesrealizeBookMark),
+    fork(watchDesrealizeMyPost),
   ]);
 }
 /////////////////////////////////////    GetUser    /////////////////////////////////////
@@ -187,14 +194,61 @@ function* watchBookMark() {
 function* bookmark(action) {
   console.log('bookmark saga의 실행');
   try {
-    // yield call(bookmarkAPI, action.data);
-    yield delay(500);
-    yield put({type: ADD_BOOKMARK_SUCCESS, data: action.data}); // action.data = post.id
+    const res = yield call(bookmarkAPI, action.data);
+    // yield delay(500);
+    yield put({type: ADD_BOOKMARK_SUCCESS, data: res.data}); // action.data = { BookmarkedId: bookMarkId }
   } catch (e) {
     yield put({type: ADD_BOOKMARK_FAILURE, error: e});
   }
 }
 // API
 const bookmarkAPI = data => {
+  // data = {bookMarkId: post.id}
+  return axios.get(`/user/bookmark/${data.bookMarkId}`);
+};
+
+/////////////////////////////////////    DesrealizeBookMark    /////////////////////////////////////
+// 액션 리스너
+function* watchDesrealizeBookMark() {
+  console.log('사가');
+  yield takeLatest(DESERIALIZE_BOOKMARK_REQUEST, deserializebookmark);
+}
+// 액션 핸들러
+function* deserializebookmark(action) {
+  console.log('deserializebookmark saga의 실행');
+  try {
+    const res = yield call(deserializebookmarkAPI, action.data);
+    // yield delay(500);
+    yield put({type: DESERIALIZE_BOOKMARK_SUCCESS, data: res.data}); // action.data = { BookmarkedId: bookMarkId }
+  } catch (e) {
+    console.log(e);
+    yield put({type: DESERIALIZE_BOOKMARK_FAILURE, error: e.response.data});
+  }
+}
+// API
+const deserializebookmarkAPI = data => {
+  // data = [ {id : 1}, { id : 2} ]
   return axios.post('/user/bookmark', data);
+};
+
+////////////////////////////////////    DesrealizeMyPost    /////////////////////////////////////
+// 액션 리스너
+function* watchDesrealizeMyPost() {
+  yield takeLatest(DESERIALIZE_MYPOST_REQUEST, deserializemypost);
+}
+// 액션 핸들러
+function* deserializemypost(action) {
+  console.log('deserializemypost saga의 실행');
+  try {
+    const res = yield call(deserializemypostAPI, action.data);
+    // yield delay(500);
+    yield put({type: DESERIALIZE_MYPOST_SUCCESS, data: res.data});
+  } catch (e) {
+    yield put({type: DESERIALIZE_MYPOST_FAILURE, error: e});
+  }
+}
+// API
+const deserializemypostAPI = data => {
+  // data = [ {id : 1}, { id : 2} ]
+  return axios.post('/user/post', data);
 };

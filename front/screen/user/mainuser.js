@@ -11,6 +11,8 @@ import {useNavigation} from '@react-navigation/native';
 import {useSelector} from 'react-redux';
 import Post from '../../component/post';
 import UserInfo from '../../component/userinfo';
+import {deserializeBookmark, deserializeMyPost} from '../../reducers/user';
+import {useDispatch} from 'react-redux';
 
 const PostFilterCotainer = styled.View`
   flex-direction: row;
@@ -235,29 +237,52 @@ const AddPost = StyleSheet.create({
 // };
 
 const MainUser = () => {
-  const posts = useSelector(state => state.posts);
+  // const posts = useSelector(state => state.posts);
   const me = useSelector(state => state.user.me);
   const [myPost, setMyPost] = useState([]);
-  const [bookMarkPost, setBookMarkPost] = useState([]);
+  const [bookMarkPost, setBookMarkPost] = useState(me.Bookmarked);
+  const dispatch = useDispatch();
 
   // 내 글 보기
-  const myPostShow = () => {
-    const findMyPost = posts.mainPosts.filter(p => me.PostsId.includes(p.id));
-    setMyPost(findMyPost);
+  const myPostDeserialize = () => {
+    setBookMarkPost([]);
+    dispatch(deserializeMyPost(me.Posts));
   };
 
   // 북마크한 글 보기
-  const myBookMarkPostShow = () => {
-    const findBookMarkPost = posts.mainPosts.filter(p =>
-      me.bookmarkId.includes(p.id),
-    );
-    setBookMarkPost(findBookMarkPost);
+  const myBookMarkPostDeserialize = () => {
+    setMyPost([]);
+    if (
+      me.Bookmarked[me.Bookmarked.length - 1].title &&
+      me.Bookmarked[1].title
+    ) {
+      // alert('새롭게 불러올 북마크가 없습니다.');
+      return null;
+    } else {
+      return dispatch(deserializeBookmark(me.Bookmarked));
+    }
   };
 
-  //초기 화면에서 북마크 게시물 불러오기(테스트 시에는 초기 값이 없으므로 안들어오지만 원래는 있으니까 바로 들어온다)
+  //전부 복원 및 초기 화면은 북마크로 세팅
   useEffect(() => {
-    myBookMarkPostShow();
+    dispatch(deserializeBookmark(me.Bookmarked));
+    dispatch(deserializeMyPost(me.Posts));
   }, []);
+
+  //새로고침용
+  useEffect(() => {
+    // 자동으로 me.Bookmarked의 변화를 감지해서 실행한다.
+    if (Object.keys((me.Bookmarked[me.Bookmarked.length - 1].length = 1))) {
+      myBookMarkPostDeserialize(); // 디시리얼라이즈가 일어나고
+      setBookMarkPost(me.Bookmarked);
+    }
+    // // // me.Posts가 변화했다면 me.Posts를 디시리얼라이즈 한다.
+    // if (Object.keys((me.Posts[me.Posts.length - 1].length = 1))) {
+    //   myPostDeserialize();
+    // }
+    // 마찬가지로, 포스트도. 새로 생성되면 변화가 감지되어서 디시리얼라이즈가 일어나도록 함.
+    // 단 상태에 반영하는 건 버튼을 눌렀을 때만.
+  }, [me.Bookmarked]); //me.Posts
 
   const navigation = useNavigation();
 
@@ -278,10 +303,10 @@ const MainUser = () => {
           <UserInfo me={me} />
         </TouchableOpacity>
         <PostFilterCotainer>
-          <TouchableOpacity onPress={myPostShow}>
+          <TouchableOpacity onPress={myPostDeserialize}>
             <Text style={PostFilter.myPost}>내 글</Text>
           </TouchableOpacity>
-          <TouchableOpacity onPress={myBookMarkPostShow}>
+          <TouchableOpacity onPress={myBookMarkPostDeserialize}>
             <Text style={PostFilter.bookMark}>북마크</Text>
           </TouchableOpacity>
         </PostFilterCotainer>

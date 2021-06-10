@@ -138,7 +138,7 @@ const Post = ({post, tab}) => {
 
   // 북마크
   const onAddBookMark = () => {
-    dispatch(addBookMarkRequest(post.id));
+    dispatch(addBookMarkRequest({bookMarkId: post.id}));
   };
 
   // 좋아요
@@ -172,7 +172,7 @@ const Post = ({post, tab}) => {
         </View>
         <TouchableOpacity onPress={gotoDetail(post)}>
           <View style={TopOfPost.content}>
-            {post.content.length > 30 ? (
+            {post?.content?.length > 30 ? (
               <>
                 <Text>{`${post.content.slice(0, 30)}`}</Text>
                 <Text style={TopOfPost.more}>...더보기</Text>
@@ -187,17 +187,17 @@ const Post = ({post, tab}) => {
             <PostImage style={TopOfPost.images} images={post.Images} />
           </View>
         )}
-        {post.SharePostId && (
+        {post?.SharePostId && (
           <SharePost sharePostId={post.SharePostId} tab={tab} />
         )}
         <Text style={TopOfPost.userinfo}>
-          {post.User.nickname} / {post.User.brand} / {post.User.region}
+          {post?.User?.nickname} / {post?.User?.brand} / {post?.User?.region}
         </Text>
       </View>
       <View style={BottomOfPost.container}>
         <View style={BottomOfPost.bottom_left}>
           <Text style={BottomOfPost.see}>
-            <Ionicons name="eye-outline" size={13} /> ∙ {post.see}
+            <Ionicons name="eye-outline" size={13} /> ∙ {post?.see}
           </Text>
           <TouchableOpacity onPress={onPressLike(post.id)}>
             <Text style={BottomOfPost.like}>
@@ -207,12 +207,12 @@ const Post = ({post, tab}) => {
           <TouchableOpacity onPress={gotoDetail(post)}>
             <Text style={BottomOfPost.comments}>
               <Ionicons name="chatbox-ellipses-outline" size={13} /> ∙
-              {post.Comments.length}
+              {post?.Comments?.length}
             </Text>
           </TouchableOpacity>
         </View>
         <View style={BottomOfPost.bottom_right}>
-          <Text style={BottomOfPost.createdAt}>{post.createdAt}</Text>
+          <Text style={BottomOfPost.createdAt}>{post?.createdAt}</Text>
           <TouchableOpacity onPress={onAddBookMark}>
             <Ionicons name="bookmark-outline" size={15} />
           </TouchableOpacity>

@@ -25,7 +25,7 @@ router.get(`/posts/:lastId`, async (req, res, next) => {
     // 둘째 요청: 11, 10, 9 ([Op.lt]: lastId =>  all < 12, limit 3)
     const posts = await Post.findAll({
       where,
-      limit: 3,
+      limit: 5,
       order: [
         ["createdAt", "DESC"],
         [Comment, "createdAt", "DESC"],
@@ -214,5 +214,11 @@ const standard_include = [
   },
   { model: User, as: "PostLiker", attributes: ["id"] }, // 포스트를 좋아요한 유저
   { model: Post, as: "SharePost", attributes: ["id"] }, // 공유한 대상이 되는 포스트
+  {
+    model: User,
+    as: "Bookmarker",
+    attributes: ["id"],
+    through: { attirbutes: [] }, // 중앙테이블 자동 불러오기 제거
+  },
   { model: Image, attributes: ["id", "uri"] }, // 포스트에 달린 이미지
 ];

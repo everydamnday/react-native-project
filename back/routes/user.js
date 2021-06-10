@@ -1,11 +1,11 @@
 const express = require("express");
 const passport = require("passport");
-const { User, Post, Comment, Recomment } = require("../models");
+const { User, Post, Image, Comment, Recomment } = require("../models");
 const dotenv = require("dotenv");
 const router = express.Router();
 const bcrypt = require("bcrypt");
 const fetch = require("node-fetch");
-var onHeaders = require("on-headers");
+const { Op } = require("sequelize");
 
 // 유저 라우터
 
@@ -80,12 +80,17 @@ router.post("/login", (req, res, next) => {
           { model: Post, attributes: ["id"] }, // 유저가 쓴 포스트
           { model: Comment, attributes: ["id"] }, // 유저가 쓴 코멘트
           { model: Recomment, attributes: ["id"] }, // 유저가 쓴 리코멘트
-          { model: Post, as: "Bookmarked", attributes: ["id"] }, // 유저가 북마크한 포스트
+          {
+            model: Post,
+            as: "Bookmarked",
+            attributes: ["id"],
+            through: { attributes: [] },
+          }, // 유저가 북마크한 포스트
         ],
       });
       // 인증되었는지
-      console.log("req.session", req.session);
-      console.log("req.user", req.user);
+      // console.log("req.session", req.session);
+      // console.log("req.user", req.user);
 
       // onHeaders(res, function () {
       //   // knock yourself out
@@ -198,4 +203,188 @@ router.get("/kakao/login", async (req, res) => {
   }
 });
 
+// 북마크 추가
+// 북마크 대상 포스트의 유효성 검증 // 유저 테이블에 관계 지어줌 // 유저에 넣어서 보내주기
+router.get("/bookmark/:bookMarkId", async (req, res, next) => {
+  const { bookMarkId } = req.params;
+  try {
+    const targetPost = await Post.findOne({
+      where: { id: parseInt(bookMarkId) },
+      include: standard_include_Post,
+    });
+    // 존재하는 포스트 인가?
+    if (!targetPost) {
+      console.log("존재하지 않는 포스트");
+      return res.status(401).send({ message: "존재하지 않는 게시물입니다." });
+    }
+    // 내가 쓴 포스트인가?
+    if (req.user.id === targetPost.UserId) {
+      // 내가 쓴 걸 누가 공유한 포스트는 북마크 할 수 있게 함.
+      console.log("내가 쓴 포스트");
+      return res
+        .status(402)
+        .send({ message: "내가 쓴 게시물은 북마크할 수 없습니다" });
+    }
+    // 내가 이미 북마크한 포스트인가?
+    const exBookmarked = await User.findByPk(req.user.id, {
+      include: [
+        {
+          model: Post,
+          as: "Bookmarked",
+          through: {
+            where: {
+              BookmarkedId: targetPost.id, // 북마크 하려는 id가 db에 있는지 조회
+            },
+          },
+        },
+      ],
+    });
+    if (exBookmarked.Bookmarked[0]) {
+      // 있다면?
+      return res.status(403).send({ message: "이미 북마크 하셨습니다" });
+    }
+
+    // Bookmark 테이블에 행 생성해야함.
+    const user = await User.findOne({ where: { id: req.user.id } });
+    await user.addBookmarked(targetPost); // Bookmark 테이블에 행을 만든다.
+    console.log(exBookmarked);
+    return res.status(200).json({ id: bookMarkId });
+  } catch (error) {
+    console.error(error);
+    return next(error);
+  }
+});
+
+const firstOrLaterFilter = (data) => {
+  let filteredWhere = {};
+  let arry = [];
+  // 북마크를 추가한 이후 where 일 때(일부 id속성, 일부 full객체) where
+  if ((Object.keys(data[data.length - 1]).length = 1)) {
+    console.log("두번째 디시리얼라이즈 부터");
+    data.map((i) => {
+      arry.push({ id: i.id });
+    });
+    filteredWhere = {
+      [Op.or]: arry,
+    };
+  } else {
+    // 최초 디시리얼라이즈(전체 id 속성 객체 배열) where
+    console.log("첫번째 디시리얼라이즈");
+    filteredWhere = {
+      [Op.or]: data,
+    };
+  }
+  return filteredWhere;
+};
+
+// 북마크 디시리얼라이즈
+// 조인된 bookmark 테이블의 Bookmarker 가 req.user.id 인 녀석들로 찾는다.
+router.post("/bookmark", async (req, res, next) => {
+  // 북마크된 게시물이 없는 경우(검증)
+  const BookMarked = req.body;
+  if (BookMarked === []) {
+    return res.status(400).send("북마크한 게시물이 없습니다");
+  }
+  // 최초의 deserialize 인지 아닌지 구분
+  const filteredWhere = firstOrLaterFilter(BookMarked);
+  // 북마크 게시물 복원
+  try {
+    const fullBookMarkPosts = await Post.findAll({
+      where: filteredWhere,
+      include: standard_include_Post,
+    });
+    return res.status(200).send(fullBookMarkPosts);
+  } catch (error) {
+    console.error(error);
+    return next(error);
+  }
+});
+
+// 내 게시물 디시리얼라이즈
+router.post("/post", async (req, res, next) => {
+  // const myPostIds = req.body;
+  // console.log(myPostIds);
+  // if (myPostIds !== []) {
+  // where = {
+  //   [Op.or]: myPostIds,
+  // };
+  try {
+    const myPosts = await Post.findAll({
+      where: { UserId: req.user.id },
+      // limit: 3, 프론트 쪽 인피니트 스크롤 구현 후 적용
+      include: standard_include_Post,
+    });
+    return res.status(200).send(myPosts);
+  } catch (error) {
+    console.error(error);
+    return next(error);
+  }
+});
+
 module.exports = router;
+
+// 표준 Post테이블 조인 모델 : include
+const standard_include_Post = [
+  { model: User, attributes: ["id", "nickname"] },
+  {
+    model: Comment,
+    attributes: ["id", "content"],
+    include: [
+      { model: User, attributes: ["id", "nickname"] }, // 코멘트 작성자
+      { model: Post, attributes: ["id"] }, // 코멘트가 달린 포스트
+      { model: User, as: "CommentLiker", attributes: ["id"] }, // 코멘트를 좋아요 한 유저
+      {
+        model: Recomment,
+        attributes: ["id", "content"],
+        include: [
+          { model: User, attributes: ["id", "nickname"] }, // 리코멘트 작성자
+          { model: Comment, attributes: ["id"] }, // 리코멘트가 달린 코멘트
+          { model: User, as: "RecommentLiker", attributes: ["id"] }, // 리코멘트를 좋아요 한 유저
+        ],
+      },
+    ],
+  },
+  { model: User, as: "PostLiker", attributes: ["id"] }, // 포스트를 좋아요한 유저
+  { model: Post, as: "SharePost" }, // 공유한 대상이 되는 포스트
+  {
+    model: User,
+    as: "Bookmarker",
+    attributes: ["id"],
+    through: { attirbutes: [] }, // 중앙테이블 자동 불러오기 제거
+  },
+  { model: Image, attributes: ["id", "uri"] }, // 포스트에 달린 이미지
+];
+
+// const forBookmark_include = [
+//   { model: User, attributes: ["id", "nickname"] },
+//   {
+//     model: Comment,
+//     attributes: ["id", "content"],
+//     include: [
+//       { model: User, attributes: ["id", "nickname"] }, // 코멘트 작성자
+//       { model: Post, attributes: ["id"] }, // 코멘트가 달린 포스트
+//       { model: User, as: "CommentLiker", attributes: ["id"] }, // 코멘트를 좋아요 한 유저
+//       {
+//         model: Recomment,
+//         attributes: ["id", "content"],
+//         include: [
+//           { model: User, attributes: ["id", "nickname"] }, // 리코멘트 작성자
+//           { model: Comment, attributes: ["id"] }, // 리코멘트가 달린 코멘트
+//           { model: User, as: "RecommentLiker", attributes: ["id"] }, // 리코멘트를 좋아요 한 유저
+//         ],
+//       },
+//     ],
+//   },
+//   { model: User, as: "PostLiker", attributes: ["id"] }, // 포스트를 좋아요한 유저
+//   { model: Post, as: "SharePost", attributes: ["id"] }, // 공유한 대상이 되는 포스트
+//   {
+//     model: User,
+//     as: "Bookmarker",
+//     through: {
+//       where: {
+//         BookmarkerId: req.user.id,
+//       },
+//     },
+//   },
+//   { model: Image, attributes: ["id", "uri"] }, // 포스트에 달린 이미지
+// ];
