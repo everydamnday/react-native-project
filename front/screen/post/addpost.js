@@ -208,13 +208,7 @@ const AddPost = ({route}) => {
               <PostImages images={upLoadedImages} />
             </View>
           )}
-          {sharePost && (
-            <SharePost
-              post={sharePost}
-              sharePostId={sharePost.id}
-              tab={'Post'}
-            />
-          )}
+          {sharePost && <SharePost SharePost={sharePost} tab={'Post'} />}
         </View>
       </ScrollView>
       <View style={Addpost.button}>

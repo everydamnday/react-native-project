@@ -247,7 +247,7 @@ const user = (state = initialState, action) => {
         break;
       /////////////////////////////////   ADD_POST_TO_ME    /////////////////////////////////
       case ADD_POST_TO_ME:
-        draft.me.Posts.push(action.data);
+        draft.me.Posts.push({id: action.data});
         break;
       ///////////////////////////////// DESERIALIZE_MYPOST ////////////////////////////////
       case DESERIALIZE_MYPOST_REQUEST:

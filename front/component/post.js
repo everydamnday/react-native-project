@@ -188,7 +188,7 @@ const Post = ({post, tab}) => {
           </View>
         )}
         {post?.SharePostId && (
-          <SharePost sharePostId={post.SharePostId} tab={tab} />
+          <SharePost SharePost={post.SharePost} tab={tab} />
         )}
         <Text style={TopOfPost.userinfo}>
           {post?.User?.nickname} / {post?.User?.brand} / {post?.User?.region}

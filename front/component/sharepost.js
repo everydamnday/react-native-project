@@ -59,17 +59,14 @@ const TopOfSharePost = StyleSheet.create({
   },
 });
 
-const SharePost = ({sharePostId, tab}) => {
-  const sharePost = useSelector(state =>
-    state.posts.mainPosts.find(p => p.id === sharePostId),
-  );
+const SharePost = ({SharePost, tab}) => {
   // 탭별 디테일로 넘어가기
   const navigation = useNavigation();
   const gotoDetail = () => {
     if (tab === 'Post') {
-      navigation.navigate('PostDetail', {post: sharePost, tab});
+      navigation.navigate('PostDetail', {post: SharePost, tab});
     } else if (tab === 'User') {
-      navigation.navigate('UserPostDetail', {post: sharePost, tab});
+      navigation.navigate('UserPostDetail', {post: SharePost, tab});
     }
   };
 
@@ -78,32 +75,32 @@ const SharePost = ({sharePostId, tab}) => {
       <View style={TopOfSharePost.container}>
         <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
           <TouchableOpacity onPress={gotoDetail}>
-            <Text style={TopOfSharePost.title}>{sharePost?.title}</Text>
+            <Text style={TopOfSharePost.title}>{SharePost?.title}</Text>
           </TouchableOpacity>
         </View>
         <TouchableOpacity onPress={gotoDetail}>
           <View style={TopOfSharePost.content}>
-            {sharePost?.content.length > 30 ? (
+            {SharePost?.content.length > 30 ? (
               <>
-                <Text>{`${sharePost?.content.slice(0, 30)}`}</Text>
+                <Text>{`${SharePost?.content.slice(0, 30)}`}</Text>
                 <Text style={TopOfSharePost.more}>...더보기</Text>
               </>
             ) : (
-              <Text>{sharePost?.content}</Text>
+              <Text>{SharePost?.content}</Text>
             )}
           </View>
         </TouchableOpacity>
-        {sharePost?.Images?.[0] && (
+        {SharePost?.Images?.[0] && (
           <View style={TopOfSharePost.imageContainer}>
             <PostImage
               style={TopOfSharePost.images}
-              images={sharePost?.Images}
+              images={SharePost?.Images}
             />
           </View>
         )}
         <Text style={TopOfSharePost.userinfo}>
-          {sharePost?.User.nickname} / {sharePost?.User.brand} /
-          {sharePost?.User.region}
+          {SharePost?.User.nickname} / {SharePost?.User.brand} /
+          {SharePost?.User.region}
         </Text>
       </View>
     </SharePostContainer>

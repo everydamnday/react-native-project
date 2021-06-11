@@ -239,50 +239,49 @@ const AddPost = StyleSheet.create({
 const MainUser = () => {
   // const posts = useSelector(state => state.posts);
   const me = useSelector(state => state.user.me);
-  const [myPost, setMyPost] = useState([]);
-  const [bookMarkPost, setBookMarkPost] = useState(me.Bookmarked);
+  // const [myPost, setMyPost] = useState([]);
+  // const [bookMarkPost, setBookMarkPost] = useState([]);
+  const [whatshow, setWhatShow] = useState(true);
+
   const dispatch = useDispatch();
 
-  // 내 글 보기
+  // 내 포스트 디시리얼라이즈
   const myPostDeserialize = () => {
-    setBookMarkPost([]);
-    dispatch(deserializeMyPost(me.Posts));
+    setWhatShow(prev => !prev);
+    // 모든 요소가 완전합니까? => 아닐 경우에 디시리얼라이즈
+    if (me.Posts[me.Posts.length - 1].title && me.Posts[0].title) {
+      console.log('새롭게 불러올 포스트가 없습니다.');
+      return null;
+    } else {
+      return dispatch(deserializeMyPost(me.Posts));
+    }
   };
 
-  // 북마크한 글 보기
+  // 북마크 디시리얼라이즈
   const myBookMarkPostDeserialize = () => {
-    setMyPost([]);
+    setWhatShow(prev => !prev);
     if (
+      // 모든 요소가 완전합니까? => 아닐 경우에만 디시리얼라이즈
       me.Bookmarked[me.Bookmarked.length - 1].title &&
-      me.Bookmarked[1].title
+      me.Bookmarked[0].title
     ) {
-      // alert('새롭게 불러올 북마크가 없습니다.');
+      console.log('새롭게 불러올 북마크가 없습니다.');
       return null;
     } else {
       return dispatch(deserializeBookmark(me.Bookmarked));
     }
   };
 
-  //전부 복원 및 초기 화면은 북마크로 세팅
+  // 페이지 접근 시, 전부 복원 및 초기 화면은 북마크로 세팅
   useEffect(() => {
-    dispatch(deserializeBookmark(me.Bookmarked));
-    dispatch(deserializeMyPost(me.Posts));
-  }, []);
+    console.log('북마크 디시리얼라이즈');
+    myBookMarkPostDeserialize();
+  }, [me.Bookmarked]);
 
-  //새로고침용
   useEffect(() => {
-    // 자동으로 me.Bookmarked의 변화를 감지해서 실행한다.
-    if (Object.keys((me.Bookmarked[me.Bookmarked.length - 1].length = 1))) {
-      myBookMarkPostDeserialize(); // 디시리얼라이즈가 일어나고
-      setBookMarkPost(me.Bookmarked);
-    }
-    // // // me.Posts가 변화했다면 me.Posts를 디시리얼라이즈 한다.
-    // if (Object.keys((me.Posts[me.Posts.length - 1].length = 1))) {
-    //   myPostDeserialize();
-    // }
-    // 마찬가지로, 포스트도. 새로 생성되면 변화가 감지되어서 디시리얼라이즈가 일어나도록 함.
-    // 단 상태에 반영하는 건 버튼을 눌렀을 때만.
-  }, [me.Bookmarked]); //me.Posts
+    console.log('내포스트 디시리얼라이즈');
+    myPostDeserialize();
+  }, [me.Posts]);
 
   const navigation = useNavigation();
 
@@ -313,12 +312,16 @@ const MainUser = () => {
       </View>
       <View style={{flex: 1}}>
         <ScrollView>
-          {bookMarkPost?.map(post => (
-            <Post key={post.id} post={post} tab={'User'} />
-          ))}
-          {myPost?.map(post => (
-            <Post key={post.id} post={post} tab={'User'} />
-          ))}
+          {whatshow &&
+            me.Bookmarked[0]?.title &&
+            me.Bookmarked?.map(post => (
+              <Post key={post.id} post={post} tab={'User'} />
+            ))}
+          {whatshow ||
+            (me.Posts[0]?.title &&
+              me.Posts?.map(post => (
+                <Post key={post.id} post={post} tab={'User'} />
+              )))}
         </ScrollView>
         <TouchableOpacity onPress={onAddpost} style={AddPost.container}>
           <Text style={AddPost.plus}>+</Text>

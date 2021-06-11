@@ -30,7 +30,7 @@ router.get(`/posts/:lastId`, async (req, res, next) => {
         ["createdAt", "DESC"],
         [Comment, "createdAt", "DESC"],
       ],
-      include: standard_include,
+      include: standard_include_Post,
     });
     return res.status(200).json(posts);
   } catch (error) {
@@ -64,7 +64,7 @@ router.post("/add", async (req, res, next) => {
     // 보내줄 포스트 객체 조회
     const fullPost = await Post.findOne({
       where: { id: post.id },
-      include: standard_include,
+      include: standard_include_Post,
     });
     // console.log(fullPost);
     return res.status(200).send(fullPost);
@@ -119,7 +119,7 @@ router.post("/edit", async (req, res, next) => {
     }
     const fullPost = await Post.findOne({
       where: { id: post.id },
-      include: standard_include,
+      include: standard_include_Post,
     });
     return res.status(200).send(fullPost);
   } catch (error) {
@@ -172,7 +172,7 @@ router.post("/share", async (req, res, next) => {
     });
     const fullpost = await Post.findOne({
       where: { id: sharePost.id },
-      include: standard_include,
+      include: standard_include_Post,
     });
     return res.status(200).send(fullpost);
   } catch (error) {
@@ -192,13 +192,13 @@ module.exports = router;
 // }
 
 // 표준 Post테이블 조인 모델 : include
-const standard_include = [
-  { model: User, attributes: ["id", "nickname"] },
+const standard_include_Post = [
+  { model: User, exclude: ["password"] },
   {
     model: Comment,
     attributes: ["id", "content"],
     include: [
-      { model: User, attributes: ["id", "nickname"] }, // 코멘트 작성자
+      { model: User, exclude: ["password"] }, // 코멘트 작성자
       { model: Post, attributes: ["id"] }, // 코멘트가 달린 포스트
       { model: User, as: "CommentLiker", attributes: ["id"] }, // 코멘트를 좋아요 한 유저
       {
@@ -213,7 +213,14 @@ const standard_include = [
     ],
   },
   { model: User, as: "PostLiker", attributes: ["id"] }, // 포스트를 좋아요한 유저
-  { model: Post, as: "SharePost", attributes: ["id"] }, // 공유한 대상이 되는 포스트
+  {
+    model: Post,
+    as: "SharePost",
+    include: [
+      { model: User, attributes: { exclude: ["password"] } },
+      { model: Image, attributes: ["id", "uri"] },
+    ],
+  }, // 공유한 대상이 되는 포스트
   {
     model: User,
     as: "Bookmarker",
@@ -221,4 +228,11 @@ const standard_include = [
     through: { attirbutes: [] }, // 중앙테이블 자동 불러오기 제거
   },
   { model: Image, attributes: ["id", "uri"] }, // 포스트에 달린 이미지
+];
+
+const standard_include_User = [
+  { model: Post, attributes: ["id"] }, // 유저가 쓴 포스트
+  { model: Comment, attributes: ["id"] }, // 유저가 쓴 코멘트
+  { model: Recomment, attributes: ["id"] }, // 유저가 쓴 리코멘트
+  { model: Post, as: "Bookmarked", attributes: ["id"] }, // 유저가 북마크한 포스트
 ];
