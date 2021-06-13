@@ -17,9 +17,11 @@ module.exports = (sequelize, DataTypes) => {
       },
       see: {
         type: DataTypes.INTEGER,
+        defaultValue: [],
       },
       like: {
         type: DataTypes.INTEGER,
+        defaultValue: [],
       },
     },
     {

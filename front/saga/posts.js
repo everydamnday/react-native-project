@@ -40,6 +40,9 @@ import {
   UPLOAD_IMAGE_REQUEST,
   UPLOAD_IMAGE_SUCCESS,
   UPLOAD_IMAGE_FAILURE,
+  ADD_SEE_SUCCESS,
+  ADD_SEE_FAILURE,
+  ADD_SEE_REQUEST,
 } from '../reducers/posts';
 import axios from 'axios';
 import {ADD_POST_TO_ME, REMOVE_POST_TO_ME} from '../reducers/user';
@@ -53,6 +56,7 @@ export default function* postSaga() {
     fork(watchDeletePost),
     fork(watchSharePost),
     fork(watchLikePost),
+    fork(watchAddSee),
     fork(watchAddComment),
     fork(watchEditComment),
     fork(watchDeleteComment),
@@ -346,9 +350,9 @@ function* watchLikePost() {
 function* likepost(action) {
   console.log('likepost의 실행');
   try {
-    // yield call(likepostAPI, action.data);
+    const res = yield call(likepostAPI, action.data);
     // yield delay(1000);
-    yield put({type: LIKE_POST_SUCCESS, data: action.data}); // action.data = id
+    yield put({type: LIKE_POST_SUCCESS, data: res.data}); // action.data = id
   } catch (e) {
     console.log(e);
     yield put({type: LIKE_POST_FAILURE, error: e.response.data});
@@ -358,7 +362,35 @@ function* likepost(action) {
 //API
 const likepostAPI = data => {
   // data = action.data = post.id
-  return axios.post(`/post/${data}/like`);
+  return axios.get(`/post/${data}/like`);
+};
+
+/////////////////////////////////////     AddSee      ///////////////////////////////////////////
+//액션 리스너
+function* watchAddSee() {
+  yield takeLatest(ADD_SEE_REQUEST, addsee);
+}
+//액션 핸들러
+function* addsee(action) {
+  console.log('addsee의 실행');
+  try {
+    const res = yield call(addseeAPI, action.data);
+    // yield delay(1000);
+    console.log(res.data);
+    yield put({
+      type: ADD_SEE_SUCCESS,
+      data: res.data,
+    }); // data = { postId : post.id }
+  } catch (e) {
+    console.log(e);
+    yield put({type: ADD_SEE_FAILURE, error: e.response.data});
+  }
+}
+
+//API
+const addseeAPI = data => {
+  // data = { postId : post.id }
+  return axios.get(`/post/${data.postId}/see`);
 };
 
 /////////////////////////////////////     UPLOAD_IMAGE      ///////////////////////////////////////////

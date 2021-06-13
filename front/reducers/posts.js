@@ -57,6 +57,9 @@ const initialState = {
   removeImageLoading: false, // 업로드 이미지 삭제
   removeImageDone: false,
   removeImageError: null,
+  addSeeLoading: false, // 리코멘트 생성
+  addSeeDone: false,
+  addSeeError: null,
 };
 
 // 액션 변수
@@ -81,6 +84,7 @@ export const DELETE_POST_FAILURE = 'DELETE_POST_FAILURE';
 export const SHARE_POST_REQUEST = 'SHARE_POST_REQUEST';
 export const SHARE_POST_SUCCESS = 'SHARE_POST_SUCCESS';
 export const SHARE_POST_FAILURE = 'SHARE_POST_FAILURE';
+
 // 코멘트 생성
 export const ADD_COMMENT_REQUEST = 'ADD_COMMENT_REQUEST';
 export const ADD_COMMENT_SUCCESS = 'ADD_COMMENT_SUCCESS';
@@ -93,6 +97,7 @@ export const EDIT_COMMENT_FAILURE = 'EDIT_COMMENT_FAILURE';
 export const DELETE_COMMENT_REQUEST = 'DELETE_COMMENT_REQUEST';
 export const DELETE_COMMENT_SUCCESS = 'DELETE_COMMENT_SUCCESS';
 export const DELETE_COMMENT_FAILURE = 'DELETE_COMMENT_FAILURE';
+
 // 리코멘트 생성
 export const ADD_RECOMMENT_REQUEST = 'ADD_RECOMMENT_REQUEST';
 export const ADD_RECOMMENT_SUCCESS = 'ADD_RECOMMENT_SUCCESS';
@@ -105,6 +110,7 @@ export const EDIT_RECOMMENT_FAILURE = 'EDIT_RECOMMENT_FAILURE';
 export const DELETE_RECOMMENT_REQUEST = 'DELETE_RECOMMENT_REQUEST';
 export const DELETE_RECOMMENT_SUCCESS = 'DELETE_RECOMMENT_SUCCESS';
 export const DELETE_RECOMMENT_FAILURE = 'DELETE_RECOMMENT_FAILURE';
+
 // 포스트 좋아요
 export const LIKE_POST_REQUEST = 'LIKE_POST_REQUEST';
 export const LIKE_POST_SUCCESS = 'LIKE_POST_SUCCESS';
@@ -115,6 +121,10 @@ export const UPLOAD_IMAGE_SUCCESS = 'UPLOAD_IMAGE_SUCCESS';
 export const UPLOAD_IMAGE_FAILURE = 'UPLOAD_IMAGE_FAILURE';
 // 업로드 이미지 제거
 export const REMOVE_IMAGE = 'REMOVE_IMAGE';
+// 게시물 조회
+export const ADD_SEE_REQUEST = 'ADD_SEE_REQUEST';
+export const ADD_SEE_SUCCESS = 'ADD_SEE_SUCCESS';
+export const ADD_SEE_FAILURE = 'ADD_SEE_FAILURE';
 
 //////////////////////////////////////////////  액션 크리에이터  //////////////////////////////////////////////
 // 포스트 로드(비동기)
@@ -188,6 +198,12 @@ export const imageUpLoad = data => ({
 // 업로드 이미지 제거(단순 초기화)
 export const imageRemove = () => ({
   type: REMOVE_IMAGE,
+});
+// 게시물 조회
+export const addSeeRequest = data => ({
+  // data = { postId : post.id }
+  type: ADD_SEE_REQUEST,
+  data,
 });
 
 /////////////////////////////////////////////////  더미생성기  ////////////////////////////////////////////
@@ -564,14 +580,33 @@ const posts = (state = initialState, action) => {
       case LIKE_POST_SUCCESS:
         draft.likePostLoading = false;
         draft.likePostDone = true;
-        // 특정 포스트를 찾아서 좋아요 숫자 + 1(숫자 증감만)
-        const id = draft.mainPosts.findIndex(p => p.id === action.data);
-        draft.mainPosts[id].like = draft.mainPosts[id].like + 1;
+        const id = draft.mainPosts.findIndex(p => p.id === action.data.id);
+        draft.mainPosts[id] = action.data;
         break;
       case LIKE_POST_FAILURE:
         draft.likePostLoading = false;
         draft.likePostDone = false;
         draft.likePostError = action.error;
+        break;
+
+      case ADD_SEE_REQUEST:
+        draft.addSeeLoading = true;
+        draft.addSeeDone = false;
+        draft.addSeeError = null;
+        break;
+      case ADD_SEE_SUCCESS:
+        draft.addSeeLoading = false;
+        draft.addSeeDone = true;
+        const seenPostId = draft.mainPosts.findIndex(
+          v => v.id === action.data.id,
+        );
+        console.log(seenPostId);
+        draft.mainPosts[seenPostId] = action.data;
+        break;
+      case ADD_SEE_FAILURE:
+        draft.addSeeLoading = false;
+        draft.addSeeDone = false;
+        draft.addSeeError = action.error;
         break;
 
       case UPLOAD_IMAGE_REQUEST:

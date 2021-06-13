@@ -181,6 +181,64 @@ router.post("/share", async (req, res, next) => {
   }
 });
 
+// 포스트 조회하기
+// 포스트 see에 user.id를 추가 => 후에 디시리얼라이즈
+router.get("/:postId/see", async (req, res, next) => {
+  const { postId } = req.params;
+  try {
+    // post 행에 see에 본사람을 추가한다.
+    // 방법 1 : 기존 see 배열을 payload에 추가할 수 있다.
+    // 방법 2 : post.findOne({}) 으로 가져온 see 배열을 넣을 수 있다.
+    // const post = await Post.findOne({ where: { id: parseInt(postId) } });
+    // const SeenPost = await Post.update(
+    //   { see: post.see.push({ id: req.user.id }) },
+    //   { where: { id: postId } }
+    // );
+    const post = await Post.findOne({ where: { id: parseInt(postId) } });
+    const result = await Post.update(
+      { see: post.see + 1 },
+      { where: { id: postId } }
+    );
+    console.log(result[0]);
+    if (result[0] === 1) {
+      const seenPost = await Post.findOne({
+        where: { id: postId },
+        include: standard_include_Post,
+      });
+      console.log("보기", seenPost);
+      return res.status(200).send(seenPost);
+    }
+  } catch (error) {
+    console.error(error);
+    return next(error);
+  }
+});
+
+// 포스트 좋아요
+router.get("/:postId/like", async (req, res, next) => {
+  const { postId } = req.params;
+  try {
+    const post = await Post.findOne({
+      where: { id: postId },
+    });
+    const result = await Post.update(
+      {
+        like: post.like + 1,
+      },
+      { where: { id: postId } }
+    );
+    if (result[0] === 1) {
+      const likePost = await Post.findOne({
+        where: { id: postId },
+        include: standard_include_Post,
+      });
+      return res.status(200).send(likePost);
+    }
+  } catch (error) {
+    console.error(error);
+    return next(error);
+  }
+});
 module.exports = router;
 
 //이미지 저장을 위한 임시 메모리 스토리지 생성 XXXXXXXXXXXXXXXXXXXX => S3 로 대체됨

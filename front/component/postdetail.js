@@ -1,4 +1,4 @@
-import React, {useState, useCallback} from 'react';
+import React, {useState, useCallback, useEffect} from 'react';
 import {
   StyleSheet,
   Text,
@@ -19,12 +19,13 @@ import {
   heightPercentageToDP as hp,
 } from 'react-native-responsive-screen';
 import {useDispatch} from 'react-redux';
-import {addComment, addReComment} from '../reducers/posts';
+import {addComment, addReComment, addSeeRequest} from '../reducers/posts';
 import {useSelector} from 'react-redux';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import SharePost from './sharepost';
+import {likePost} from '../reducers/posts';
 
-const W = Dimensions.get('screen').width;
+// const W = Dimensions.get('screen').width;
 
 const DetailPostContainer = styled.View`
   flex-direction: column;
@@ -158,6 +159,25 @@ const Detail = ({route, navigation}) => {
   const post = useSelector(state =>
     state.posts.mainPosts.find(p => p.id === route.params.post.id),
   );
+  //
+  useEffect(() => {
+    dispatch(addSeeRequest({postId: post.id}));
+    // // 내가 본 게시물인지 체크하는 조건(post.see.User.id.includes(me.id))
+    // if (post.see.User.id.includes(me.id)) {
+    //   // 이미 본 게시물인 경우
+    //   return null;
+    // } else {
+    //   // 처음 본 게시물인 경우
+    //   return dispatch(addSeeRequest({postId: post.id}));
+    // }
+  }, []);
+
+  // 포스트 좋아요
+  const onPressLike = id => () => {
+    // id = post.id
+    dispatch(likePost(id));
+  };
+
   // 대댓글 분리
   const [reCommentInputOpen, setReCommentInputOpen] = useState(false);
   const [targetCommenter, setTargetCommenter] = useState(''); // 누구 댓글에 달거냐(view용)
@@ -228,18 +248,19 @@ const Detail = ({route, navigation}) => {
               />
             )}
             <View style={BottomOfDetailPost.bottom_bottom}>
-              <Text style={BottomOfDetailPost.like}>
-                <Ionicons name="thumbs-up-outline" size={15} />
-                {post.like}
+              <Text style={BottomOfDetailPost.see}>
+                <Ionicons name="eye-outline" size={15} /> ∙ {post.see}
               </Text>
+              <Text>|</Text>
+              <TouchableOpacity onPress={onPressLike(post.id)}>
+                <Text style={BottomOfDetailPost.like}>
+                  <Ionicons name="thumbs-up-outline" size={15} /> ∙ {post.like}
+                </Text>
+              </TouchableOpacity>
               <Text>|</Text>
               <Text style={BottomOfDetailPost.comments}>
-                <Ionicons name="chatbox-ellipses-outline" size={15} />
+                <Ionicons name="chatbox-ellipses-outline" size={15} /> ∙{' '}
                 {post.Comments.length}
-              </Text>
-              <Text>|</Text>
-              <Text style={BottomOfDetailPost.share}>
-                <Ionicons name="eye-outline" size={15} />
               </Text>
             </View>
           </View>

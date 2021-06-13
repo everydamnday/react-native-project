@@ -12,6 +12,7 @@ import BottomSheetSlide from './bottomsheet';
 import SharePost from './sharepost';
 import {useSelector} from 'react-redux';
 import {addBookMarkRequest} from '../reducers/user';
+import symbolicateStackTrace from 'react-native/Libraries/Core/Devtools/symbolicateStackTrace';
 
 const PostContainer = styled.View`
   flex-direction: column;
@@ -197,7 +198,7 @@ const Post = ({post, tab}) => {
       <View style={BottomOfPost.container}>
         <View style={BottomOfPost.bottom_left}>
           <Text style={BottomOfPost.see}>
-            <Ionicons name="eye-outline" size={13} /> ∙ {post?.see}
+            <Ionicons name="eye-outline" size={13} /> ∙ {post.see}
           </Text>
           <TouchableOpacity onPress={onPressLike(post.id)}>
             <Text style={BottomOfPost.like}>
@@ -206,7 +207,7 @@ const Post = ({post, tab}) => {
           </TouchableOpacity>
           <TouchableOpacity onPress={gotoDetail(post)}>
             <Text style={BottomOfPost.comments}>
-              <Ionicons name="chatbox-ellipses-outline" size={13} /> ∙
+              <Ionicons name="chatbox-ellipses-outline" size={13} /> ∙{' '}
               {post?.Comments?.length}
             </Text>
           </TouchableOpacity>
