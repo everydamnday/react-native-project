@@ -1,6 +1,8 @@
 import React, {useState} from 'react';
 import {StyleSheet, Text, View, TouchableOpacity} from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import {useDispatch} from 'react-redux';
+import {likeRecomment} from '../reducers/posts';
 import BottomSheetSlide from './bottomsheet';
 import EditComment from './editcommnet';
 
@@ -50,6 +52,10 @@ const ReComment = ({postId, commentId, recomment}) => {
   const popUpOpen = () => {
     setPopUp(prev => !prev);
   };
+  const dispatch = useDispatch();
+  const onPressLike = data => () => {
+    dispatch(likeRecomment(data));
+  };
   return (
     <View style={ReCommentStyle.Container}>
       <View style={ReCommentStyle.commentContainer}>
@@ -83,11 +89,21 @@ const ReComment = ({postId, commentId, recomment}) => {
           />
         )}
         <View style={ReCommentStyle.commentBottom}>
-          <Text style={ReCommentStyle.createdAt}> {recomment.createdAt} </Text>
-          <Text>•</Text>
-          <Text style={ReCommentStyle.like}>
-            <Ionicons name="thumbs-up-outline" size={15} /> {recomment.like}
+          <Text style={ReCommentStyle.createdAt}>
+            {' '}
+            {recomment.createdAt.slice(0, 10)}{' '}
           </Text>
+          <Text>•</Text>
+          <TouchableOpacity
+            onPress={onPressLike({
+              postId,
+              commentId: commentId,
+              recommentId: recomment.id,
+            })}>
+            <Text style={ReCommentStyle.like}>
+              <Ionicons name="thumbs-up-outline" size={15} /> {recomment.like}
+            </Text>
+          </TouchableOpacity>
         </View>
       </View>
     </View>

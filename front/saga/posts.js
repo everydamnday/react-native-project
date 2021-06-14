@@ -281,9 +281,9 @@ function* watchAddReComment() {
 function* addrecomment(action) {
   console.log('addrecomment 실행');
   try {
-    // yield call(addrecommentAPI, action.data);
+    const res = yield call(addrecommentAPI, action.data);
     // yield delay(1000);
-    yield put({type: ADD_RECOMMENT_SUCCESS, data: action.data}); // data = {content : comment, postId : post.id, commentId: targetCommentId}
+    yield put({type: ADD_RECOMMENT_SUCCESS, data: res.data}); // res.data = { postId: postId, commentId: commentId, recomment: resrecomment }
   } catch (e) {
     console.log(e);
     yield put({type: ADD_RECOMMENT_FAILURE, error: e.response});
@@ -305,9 +305,9 @@ function* watchEditReComment() {
 function* editrecomment(action) {
   console.log('editrecomment의 실행');
   try {
-    // yield call(editrecommentAPI, action.data);
+    const res = yield call(editrecommentAPI, action.data);
     // yield delay(1000);
-    yield put({type: EDIT_RECOMMENT_SUCCESS, data: action.data}); // data = {  postId, commentId, recommentId: recomment.id, content: text }
+    yield put({type: EDIT_RECOMMENT_SUCCESS, data: res.data}); // res.data = {  postId, commentId, recomment: revRecomment }
   } catch (e) {
     console.log(e);
     yield put({type: EDIT_RECOMMENT_FAILURE, error: e.response.data});
@@ -332,9 +332,9 @@ function* watchDeleteReComment() {
 function* deleterecomment(action) {
   console.log('deleterecomment 실행');
   try {
-    // yield call(deleterecommentAPI, action.data);
+    const res = yield call(deleterecommentAPI, action.data);
     // yield delay(1000);
-    yield put({type: DELETE_RECOMMENT_SUCCESS, data: action.data}); // data = {postId: postId, commentId: commentId, recommentId: recommentId}
+    yield put({type: DELETE_RECOMMENT_SUCCESS, data: action.data}); // res.data = {postId, commentId, recommentId}
   } catch (e) {
     console.log(e);
     yield put({type: DELETE_RECOMMENT_FAILURE, error: e.response.data});
@@ -343,7 +343,7 @@ function* deleterecomment(action) {
 
 //API
 const deleterecommentAPI = data => {
-  // data = {title, content, Images}
+  // res.data = {postId, commentId, recommentId}
   return axios.delete(
     `/post/${data.postId}/${data.commentId}/${data.recommentId}`,
   );
@@ -408,7 +408,7 @@ function* likerecomment(action) {
   try {
     const res = yield call(likerecommentAPI, action.data);
     // yield delay(1000);
-    yield put({type: LIKE_RECOMMENT_SUCCESS, data: res.data});
+    yield put({type: LIKE_RECOMMENT_SUCCESS, data: res.data}); // res.data = { recomment: likeRecomment, commentId, postId }
   } catch (e) {
     console.log(e);
     yield put({type: LIKE_RECOMMENT_FAILURE, error: e.response.data});

@@ -284,18 +284,102 @@ router.delete("/:postId/:commentId/", async (req, res, next) => {
   console.log(postId, commentId);
   try {
     const result = await Comment.destroy({ where: { id: commentId } });
-    if (result[0] === 1) {
+    if (result === 1) {
       return res
         .status(200)
         .send({ postId: parseInt(postId), commentId: parseInt(commentId) });
     } else {
-      return res.send(400).send("삭제에 실패했습니다");
+      return res.status(400).send("삭제에 실패했습니다");
     }
   } catch (error) {
     console.error(error);
     return next(error);
   }
 });
+
+//////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////// Recomment //////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////
+
+// 리코멘트 생성하기
+// 리코멘트를 생성하고 => 코멘트를 찾아서 연결 => full 객체 만들어서 postId와 commentId 함께 전달
+router.post("/:postId/:commentId/recomment", async (req, res, next) => {
+  const { postId, commentId, content } = req.body;
+  try {
+    const recomment = await Recomment.create({
+      content,
+      like: 0,
+      UserId: req.user.id,
+      CommentId: commentId,
+    });
+    const comment = await Comment.findOne({ where: { id: commentId } });
+    await comment.addRecomment(recomment);
+    const resrecomment = await Recomment.findOne({
+      where: { id: recomment.id },
+      include: standard_include_Recomment,
+    });
+    return res
+      .status(200)
+      .send({ postId: postId, commentId: commentId, recomment: resrecomment });
+  } catch (error) {
+    console.error(error);
+    return next(error);
+  }
+});
+
+// 리코멘트 수정하기
+// 리코멘트를 찾아서 업데이트 => 리코멘트 풀객체를 찾아서 postId와 함께 전달
+router.post("/:postId/:commentId/:recommentId/edit", async (req, res, next) => {
+  const { postId, commentId, recommentId, content } = req.body;
+  try {
+    const result = await Recomment.update(
+      {
+        content,
+      },
+      { where: { id: recommentId } }
+    );
+    if (result[0] === 1) {
+      const revRecomment = await Recomment.findOne({
+        where: { id: recommentId },
+        include: standard_include_Recomment,
+      });
+      return res.status(200).send({
+        postId: postId,
+        commentId: commentId,
+        recomment: revRecomment,
+      });
+    }
+  } catch (error) {
+    console.error(error);
+    return next(error);
+  }
+});
+
+// 리코멘트 삭제하기
+// 리코멘트를 찾아서 삭제 => postId, commentId, recommentId를 보내준다.
+router.delete("/:postId/:commentId/:recommentId", async (req, res, next) => {
+  const { postId, commentId, recommentId } = req.params;
+  try {
+    const result = await Recomment.destroy({ where: { id: recommentId } });
+    console.log(result);
+    if (result === 1) {
+      return res.status(200).send({
+        postId: parseInt(postId),
+        commentId: parseInt(commentId),
+        recommentId: parseInt(recommentId),
+      });
+    } else {
+      return res.status(400).send("삭제에 실패했습니다");
+    }
+  } catch (error) {
+    console.error(error);
+    return next(error);
+  }
+});
+
+//////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////// Like P,C,R ///////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////
 
 // 포스트 좋아요(현재는 like + 1 => 이후 모델 변경)
 // 좋아요한 포스트 찾기 => like 업데이트 하기 => full post 찾아서 보내기
@@ -358,7 +442,7 @@ router.get("/:postId/:commentId/like", async (req, res, next) => {
 
 // 리코멘트 좋아요(현재는 like + 1 => 이후 모델 변경)
 // 좋아요한 리코멘트 찾기 => 리코멘트 like 업데이트 => full recomment 객체 찾기 => postId, commentId와 함께 full 객체 보내기
-router.get("/:postId/:commentId/like", async (req, res, next) => {
+router.get("/:postId/:commentId/:recommentId/like", async (req, res, next) => {
   const { postId, commentId, recommentId } = req.params;
   try {
     const recomment = await Recomment.findOne({
@@ -369,17 +453,21 @@ router.get("/:postId/:commentId/like", async (req, res, next) => {
       {
         like: recomment.like + 1,
       },
-      { where: { id: recommentId, CommentId: commentId } }
+      { where: { id: recommentId } }
     );
 
     if (result[0] === 1) {
-      const likeRecomment = await Comment.findOne({
-        where: { id: recommentId, CommentId: commentId },
-        // include: standard_include_Recomment, 추후 모델 변경 시 적용
+      const likeRecomment = await Recomment.findOne({
+        where: { id: recommentId },
+        include: standard_include_Recomment, //추후 모델 변경 시 적용
       });
-      return res
-        .status(200)
-        .send({ recomment: likeRecomment, commentId, postId });
+      return res.status(200).send({
+        recomment: likeRecomment,
+        commentId: parseInt(commentId),
+        postId: parseInt(postId),
+      });
+    } else {
+      return res.status(400).send("리코멘트가 업데이트 되지 않았습니다");
     }
   } catch (error) {
     console.error(error);
@@ -402,6 +490,7 @@ const standard_include_Post = [
   { model: User, exclude: ["password"] },
   {
     model: Comment,
+    exclude: ["password"],
     // attributes: ["id", "content"],
     include: [
       { model: User, exclude: ["password"] }, // 코멘트 작성자
@@ -409,9 +498,10 @@ const standard_include_Post = [
       { model: User, as: "CommentLiker", attributes: ["id"] }, // 코멘트를 좋아요 한 유저
       {
         model: Recomment,
+        exclude: ["password"],
         // attributes: ["id", "content"],
         include: [
-          { model: User, attributes: ["id", "nickname"] }, // 리코멘트 작성자
+          { model: User, exclude: ["password"] }, // 리코멘트 작성자
           { model: Comment, attributes: ["id"] }, // 리코멘트가 달린 코멘트
           { model: User, as: "RecommentLiker", attributes: ["id"] }, // 리코멘트를 좋아요 한 유저
         ],
@@ -451,7 +541,7 @@ const standard_include_Comment = [
     model: Recomment,
     // attributes: ["id", "content"],
     include: [
-      { model: User, attributes: ["id", "nickname"] }, // 리코멘트 작성자
+      { model: User, exclude: ["password"] }, // 리코멘트 작성자
       { model: Comment, attributes: ["id"] }, // 리코멘트가 달린 코멘트
       { model: User, as: "RecommentLiker", attributes: ["id"] }, // 리코멘트를 좋아요 한 유저
     ],
@@ -459,7 +549,7 @@ const standard_include_Comment = [
 ];
 // 표준 Recomment테이블 조인 모델
 const standard_include_Recomment = [
-  { model: User }, // 리코멘트 작성자
+  { model: User, exclude: ["password"] }, // 리코멘트 작성자
   { model: Comment, attributes: ["id"] }, // 리코멘트가 달린 코멘트
   { model: User, as: "RecommentLiker", attributes: ["id"] }, // 리코멘트를 좋아요 한 유저
 ];

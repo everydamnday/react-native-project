@@ -533,7 +533,7 @@ const posts = (state = initialState, action) => {
         // post와 comment를 찾아서 넣기
         const post = draft.mainPosts.find(p => p.id === action.data.postId);
         const comment = post.Comments.find(c => c.id === action.data.commentId);
-        comment.Recomments.push(dummyReComment(action.data));
+        comment.Recomments.push(action.data.recomment);
         break;
       }
       case ADD_RECOMMENT_FAILURE:
@@ -559,12 +559,10 @@ const posts = (state = initialState, action) => {
         );
         console.log(targetComment);
         const targetReCommentId = targetComment.Recomments.findIndex(
-          r => r.id === action.data.recommentId,
+          r => r.id === action.data.recomment.id,
         );
         console.log(targetReCommentId);
-        targetComment.Recomments[targetReCommentId] = dummyReComment(
-          action.data,
-        );
+        targetComment.Recomments[targetReCommentId] = action.data.recomment;
         break;
       }
       case EDIT_RECOMMENT_FAILURE:
@@ -649,18 +647,13 @@ const posts = (state = initialState, action) => {
       case LIKE_RECOMMENT_SUCCESS: {
         draft.likeRecommentLoading = false;
         draft.likeRecommentDone = true;
-        const postId = draft.mainPosts.findIndex(
-          p => p.id === action.data.postId,
+        const post = draft.mainPosts.find(p => p.id === action.data.postId);
+        const comment = post.Comments.find(c => c.id === action.data.commentId);
+        const recommentId = comment.Recomments.findIndex(
+          r => r.id === action.data.recomment.id,
         );
-        const commentId = draft.mainPosts[postId].findIndex(
-          c => c.id === action.data.comment.id,
-        );
-        // const recommentId = draft.mainPost[postId].Comment[
-        //   commentId
-        // ].Recomment.findIndex(r => r.id === action.data.recommentId);
-        draft.mainPosts[postId].Comment[commentId].Recomment.push(
-          action.data.recomment,
-        );
+        comment.Recomments[recommentId] = action.data.recomment;
+
         break;
       }
       case LIKE_RECOMMENT_FAILURE:
