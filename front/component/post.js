@@ -198,11 +198,13 @@ const Post = ({post, tab}) => {
       <View style={BottomOfPost.container}>
         <View style={BottomOfPost.bottom_left}>
           <Text style={BottomOfPost.see}>
-            <Ionicons name="eye-outline" size={13} /> ∙ {post.see}
+            <Ionicons name="eye-outline" size={13} /> ∙{' '}
+            {post.see ? post.see : 0}
           </Text>
           <TouchableOpacity onPress={onPressLike(post.id)}>
             <Text style={BottomOfPost.like}>
-              <Ionicons name="thumbs-up-outline" size={13} /> ∙ {post.like}
+              <Ionicons name="thumbs-up-outline" size={13} /> ∙{' '}
+              {post.like ? post.like : 0}
             </Text>
           </TouchableOpacity>
           <TouchableOpacity onPress={gotoDetail(post)}>

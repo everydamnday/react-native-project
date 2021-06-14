@@ -127,30 +127,42 @@ const CommentFilter = StyleSheet.create({
 const TextInputContainer = StyleSheet.create({
   container: {
     alignSelf: 'stretch',
-    // backgroundColor: 'black',
+    backgroundColor: 'white',
     borderTopWidth: 0.5,
     borderBottomWidth: 0.5,
     borderColor: '#20232a',
     flexDirection: 'row',
-    justifyContent: 'space-around',
+    // justifyContent: 'space-between',
+    // borderColor: 'blue',
+    // borderWidth: 3,
     width: Dimensions.get('screen').width,
   },
   input: {
+    // borderColor: 'red',
+    // borderWidth: 1,
     backgroundColor: 'white',
-    padding: 10,
-    width: wp('85%'),
+    padding: 8,
+    alignSelf: 'flex-end',
+    height: '100%',
+    width: '100%',
+    // width: wp('85%'),
   },
-  button: {
-    // 버튼 위치 다시 잡자.
+  send: {
+    position: 'absolute',
+    right: 0,
     padding: 5,
     justifyContent: 'center',
     alignItems: 'center',
-    width: wp('15%'),
-    backgroundColor: '#1E90FF',
+    height: '100%',
+    // backgroundColor: '#1E90FF',
   },
   recommenter: {
-    width: wp('20%'),
-    fontSize: 1,
+    // borderColor: 'red',
+    // borderWidth: 1,
+    // position: 'absolute',
+    // left: 0,
+    // width: wp('10%'),
+    justifyContent: 'center',
   },
 });
 
@@ -249,12 +261,14 @@ const Detail = ({route, navigation}) => {
             )}
             <View style={BottomOfDetailPost.bottom_bottom}>
               <Text style={BottomOfDetailPost.see}>
-                <Ionicons name="eye-outline" size={15} /> ∙ {post.see}
+                <Ionicons name="eye-outline" size={15} /> ∙{' '}
+                {post.see ? post.see : 0}
               </Text>
               <Text>|</Text>
               <TouchableOpacity onPress={onPressLike(post.id)}>
                 <Text style={BottomOfDetailPost.like}>
-                  <Ionicons name="thumbs-up-outline" size={15} /> ∙ {post.like}
+                  <Ionicons name="thumbs-up-outline" size={15} /> ∙{' '}
+                  {post.like ? post.like : 0}
                 </Text>
               </TouchableOpacity>
               <Text>|</Text>
@@ -284,7 +298,7 @@ const Detail = ({route, navigation}) => {
       <View style={TextInputContainer.container}>
         {reCommentInputOpen && (
           <View style={TextInputContainer.recommenter}>
-            <Text>{targetCommenter}님에게</Text>
+            <Text style={{fontSize: 12}}>{targetCommenter}</Text>
           </View>
         )}
         <TextInput
@@ -298,14 +312,16 @@ const Detail = ({route, navigation}) => {
         />
         <TouchableOpacity
           onPress={onSubmitComment}
-          style={TextInputContainer.button}>
-          <Text
+          style={TextInputContainer.send}>
+          <Ionicons name="send" size={15} />
+          {/* <Text
             style={{
               color: 'white',
               textAlign: 'center',
+              fontSize: 12,
             }}>
             보내기
-          </Text>
+          </Text> */}
         </TouchableOpacity>
       </View>
     </>

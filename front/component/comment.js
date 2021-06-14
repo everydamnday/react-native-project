@@ -17,6 +17,8 @@ import {
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import BottomSheetSlide from './bottomsheet';
 import EditComment from './editcommnet';
+import {useDispatch} from 'react-redux';
+import {likeComment} from '../reducers/posts';
 
 const Commentstyle = StyleSheet.create({
   Container: {
@@ -64,6 +66,12 @@ const Comment = ({postId, comment, onPressReComment}) => {
   const popUpOpen = () => {
     setPopUp(prev => !prev);
   };
+  const dispatch = useDispatch();
+  // 코멘트 좋아요
+  const onPressLike = data => () => {
+    // id = post.id
+    dispatch(likeComment(data));
+  };
 
   return (
     <View style={Commentstyle.Container}>
@@ -98,10 +106,13 @@ const Comment = ({postId, comment, onPressReComment}) => {
         <View style={Commentstyle.commentBottom}>
           <Text style={Commentstyle.createdAt}> {comment.createdAt} </Text>
           <Text>•</Text>
-          <Text style={Commentstyle.like}>
-            <Ionicons name="thumbs-up-outline" size={15} />
-            {comment.like}
-          </Text>
+          <TouchableOpacity
+            onPress={onPressLike({postId, commentId: comment.id})}>
+            <Text style={Commentstyle.like}>
+              <Ionicons name="thumbs-up-outline" size={15} />
+              {comment.like}
+            </Text>
+          </TouchableOpacity>
           <Text>•</Text>
           <TouchableOpacity onPress={onPressReComment(comment)}>
             <Text style={Commentstyle.reComment}>

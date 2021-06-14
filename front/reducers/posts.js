@@ -51,6 +51,12 @@ const initialState = {
   likePostLoading: false, // 포스트 좋아요
   likePostDone: false,
   likePostError: null,
+  likeCommentLoading: false, // 코멘트 좋아요
+  likeCommentDone: false,
+  likeCommentError: null,
+  likeRecommentLoading: false, // 리코멘트 좋아요
+  likeRecommentDone: false,
+  likeRecommentError: null,
   uploadImageLoading: false, // 이미지 업로드
   uploadImageDone: false,
   uploadImageError: null,
@@ -115,6 +121,15 @@ export const DELETE_RECOMMENT_FAILURE = 'DELETE_RECOMMENT_FAILURE';
 export const LIKE_POST_REQUEST = 'LIKE_POST_REQUEST';
 export const LIKE_POST_SUCCESS = 'LIKE_POST_SUCCESS';
 export const LIKE_POST_FAILURE = 'LIKE_POST_FAILURE';
+// 코멘트 좋아요
+export const LIKE_COMMENT_REQUEST = 'LIKE_COMMENT_REQUEST';
+export const LIKE_COMMENT_SUCCESS = 'LIKE_COMMENT_SUCCESS';
+export const LIKE_COMMENT_FAILURE = 'LIKE_COMMENT_FAILURE';
+// 리코멘트 좋아요
+export const LIKE_RECOMMENT_REQUEST = 'LIKE_RECOMMENT_REQUEST';
+export const LIKE_RECOMMENT_SUCCESS = 'LIKE_RECOMMENT_SUCCESS';
+export const LIKE_RECOMMENT_FAILURE = 'LIKE_RECOMMENT_FAILURE';
+
 // 이미지 업로드
 export const UPLOAD_IMAGE_REQUEST = 'UPLOAD_IMAGE_REQUEST';
 export const UPLOAD_IMAGE_SUCCESS = 'UPLOAD_IMAGE_SUCCESS';
@@ -190,6 +205,17 @@ export const likePost = data => ({
   type: LIKE_POST_REQUEST,
   data,
 }); // data = post.id
+// 코멘트 좋아요(비동기)
+export const likeComment = data => ({
+  type: LIKE_COMMENT_REQUEST,
+  data,
+}); // data = { postId, commentId : comment.id }
+// 리코멘트 좋아요
+export const likeRecomment = data => ({
+  type: LIKE_RECOMMENT_REQUEST,
+  data,
+}); // // data = { postId, commentId, recommentId: recomment.id }
+
 // 이미지 업로드(동기)
 export const imageUpLoad = data => ({
   type: UPLOAD_IMAGE_REQUEST,
@@ -199,6 +225,7 @@ export const imageUpLoad = data => ({
 export const imageRemove = () => ({
   type: REMOVE_IMAGE,
 });
+
 // 게시물 조회
 export const addSeeRequest = data => ({
   // data = { postId : post.id }
@@ -589,6 +616,53 @@ const posts = (state = initialState, action) => {
         draft.likePostError = action.error;
         break;
 
+      case LIKE_COMMENT_REQUEST:
+        draft.likeCommentLoading = true;
+        draft.likeCommentDone = false;
+        draft.likeCommentError = null;
+        break;
+      case LIKE_COMMENT_SUCCESS:
+        draft.likeCommentLoading = false;
+        draft.likeCommentDone = true;
+        const postId = draft.mainPosts.findIndex(
+          p => p.id === action.data.postId,
+        );
+        draft.mainPosts[postId].Comment.push(action.data.comment);
+        break;
+      case LIKE_COMMENT_FAILURE:
+        draft.likeCommentLoading = false;
+        draft.likeCommentDone = false;
+        draft.likeCommentError = action.error;
+        break;
+
+      case LIKE_RECOMMENT_REQUEST:
+        draft.likeRecommentLoading = true;
+        draft.likeRecommentDone = false;
+        draft.likeRecommentError = null;
+        break;
+      case LIKE_RECOMMENT_SUCCESS: {
+        draft.likeRecommentLoading = false;
+        draft.likeRecommentDone = true;
+        const postId = draft.mainPosts.findIndex(
+          p => p.id === action.data.postId,
+        );
+        const commentId = draft.mainPosts[postId].findIndex(
+          c => c.id === action.data.comment.id,
+        );
+        // const recommentId = draft.mainPost[postId].Comment[
+        //   commentId
+        // ].Recomment.findIndex(r => r.id === action.data.recommentId);
+        draft.mainPosts[postId].Comment[commentId].Recomment.push(
+          action.data.recomment,
+        );
+        break;
+      }
+      case LIKE_RECOMMENT_FAILURE:
+        draft.likeRecommentLoading = false;
+        draft.likeRecommentDone = false;
+        draft.likeRecommentError = action.error;
+        break;
+
       case ADD_SEE_REQUEST:
         draft.addSeeLoading = true;
         draft.addSeeDone = false;
@@ -600,7 +674,6 @@ const posts = (state = initialState, action) => {
         const seenPostId = draft.mainPosts.findIndex(
           v => v.id === action.data.id,
         );
-        console.log(seenPostId);
         draft.mainPosts[seenPostId] = action.data;
         break;
       case ADD_SEE_FAILURE:

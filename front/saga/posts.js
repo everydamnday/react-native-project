@@ -43,6 +43,12 @@ import {
   ADD_SEE_SUCCESS,
   ADD_SEE_FAILURE,
   ADD_SEE_REQUEST,
+  LIKE_COMMENT_REQUEST,
+  LIKE_COMMENT_SUCCESS,
+  LIKE_COMMENT_FAILURE,
+  LIKE_RECOMMENT_REQUEST,
+  LIKE_RECOMMENT_SUCCESS,
+  LIKE_RECOMMENT_FAILURE,
 } from '../reducers/posts';
 import axios from 'axios';
 import {ADD_POST_TO_ME, REMOVE_POST_TO_ME} from '../reducers/user';
@@ -56,6 +62,8 @@ export default function* postSaga() {
     fork(watchDeletePost),
     fork(watchSharePost),
     fork(watchLikePost),
+    fork(watchLikeComment),
+    fork(watchLikeRecomment),
     fork(watchAddSee),
     fork(watchAddComment),
     fork(watchEditComment),
@@ -365,6 +373,56 @@ const likepostAPI = data => {
   return axios.get(`/post/${data}/like`);
 };
 
+/////////////////////////////////////     LikeComment      ///////////////////////////////////////////
+//액션 리스너
+function* watchLikeComment() {
+  yield takeLatest(LIKE_COMMENT_REQUEST, likecomment);
+}
+//액션 핸들러
+function* likecomment(action) {
+  console.log('likecomment의 실행');
+  try {
+    const res = yield call(likecommentAPI, action.data);
+    // yield delay(1000);
+    yield put({type: LIKE_COMMENT_SUCCESS, data: res.data}); // res.data = { comment: likeComment, postId }
+  } catch (e) {
+    console.log(e);
+    yield put({type: LIKE_COMMENT_FAILURE, error: e.response.data});
+  }
+}
+
+//API
+const likecommentAPI = data => {
+  // data = action.data = {postId, commentId: comment.id}
+  return axios.get(`/post/${data.postId}/${data.commentId}/like`);
+};
+
+/////////////////////////////////////     LikeRecomment      ///////////////////////////////////////////
+//액션 리스너
+function* watchLikeRecomment() {
+  yield takeLatest(LIKE_RECOMMENT_REQUEST, likerecomment);
+}
+//액션 핸들러
+function* likerecomment(action) {
+  console.log('likerecomment의 실행');
+  try {
+    const res = yield call(likerecommentAPI, action.data);
+    // yield delay(1000);
+    yield put({type: LIKE_RECOMMENT_SUCCESS, data: res.data});
+  } catch (e) {
+    console.log(e);
+    yield put({type: LIKE_RECOMMENT_FAILURE, error: e.response.data});
+  }
+}
+
+//API
+const likerecommentAPI = data => {
+  // data = action.data = {postId, commentId, recommentId: recomment.id}
+  return axios.get(
+    `/post/${data.postId}/${data.commentId}/${data.recommentId}/like`,
+  );
+};
+
 /////////////////////////////////////     AddSee      ///////////////////////////////////////////
 //액션 리스너
 function* watchAddSee() {
@@ -376,7 +434,6 @@ function* addsee(action) {
   try {
     const res = yield call(addseeAPI, action.data);
     // yield delay(1000);
-    console.log(res.data);
     yield put({
       type: ADD_SEE_SUCCESS,
       data: res.data,

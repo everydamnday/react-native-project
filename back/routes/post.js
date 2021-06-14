@@ -239,6 +239,65 @@ router.get("/:postId/like", async (req, res, next) => {
     return next(error);
   }
 });
+
+// 코멘트 좋아요
+router.get("/:postId/:commentId/like", async (req, res, next) => {
+  const { postId, commentId } = req.params;
+  try {
+    const comment = await Comment.findOne({
+      where: { id: commentId, PostId: postId },
+    });
+
+    const result = await Comment.update(
+      {
+        like: comment.like + 1,
+      },
+      { where: { id: commentId, PostId: postId } }
+    );
+
+    if (result[0] === 1) {
+      const likeComment = await Comment.findOne({
+        where: { id: commentId, PostId: postId },
+        // include: standard_include_Comment, 추후 모델 변경 시 적용
+      });
+      return res.status(200).send({ comment: likeComment, postId });
+    }
+  } catch (error) {
+    console.error(error);
+    return next(error);
+  }
+});
+
+// 리코멘트 좋아요
+router.get("/:postId/:commentId/like", async (req, res, next) => {
+  const { postId, commentId, recommentId } = req.params;
+  try {
+    const recomment = await Recomment.findOne({
+      where: { id: recommentId, CommentId: commentId },
+    });
+
+    const result = await Recomment.update(
+      {
+        like: recomment.like + 1,
+      },
+      { where: { id: recommentId, CommentId: commentId } }
+    );
+
+    if (result[0] === 1) {
+      const likeRecomment = await Comment.findOne({
+        where: { id: recommentId, CommentId: commentId },
+        // include: standard_include_Recomment, 추후 모델 변경 시 적용
+      });
+      return res
+        .status(200)
+        .send({ recomment: likeRecomment, commentId, postId });
+    }
+  } catch (error) {
+    console.error(error);
+    return next(error);
+  }
+});
+
 module.exports = router;
 
 //이미지 저장을 위한 임시 메모리 스토리지 생성 XXXXXXXXXXXXXXXXXXXX => S3 로 대체됨
