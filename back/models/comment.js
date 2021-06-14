@@ -12,11 +12,11 @@ module.exports = (sequelize, DataTypes) => {
       },
       see: {
         type: DataTypes.INTEGER,
-        defaultValue: [],
+        // defaultValue: [], // 코멘트에 see는 지우자.
       },
       like: {
         type: DataTypes.INTEGER,
-        defaultValue: [],
+        // defaultValue: [],
       },
     },
     {

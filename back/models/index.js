@@ -9,7 +9,24 @@ const sequelize = new Sequelize(
   config.database,
   config.username,
   config.password,
-  config
+  {
+    host: "127.0.0.1",
+    dialect: "mysql",
+    dialectOptions: { charset: "utf8mb4", dateStrings: true, typeCast: true }, // 날짜의 경우 문자열로 타입 변경 처리
+    timezone: "+09:00", // 타임존을 설정
+    pool: {
+      max: 5,
+      min: 0,
+      acquire: 30000,
+      idle: 10000,
+    },
+    define: {
+      // The `timestamps` field specify whether or not the `createdAt` and `updatedAt` fields will be created.
+      // This was true by default, but now is false by default
+      timestamps: false,
+      supportBigNumbers: true,
+    },
+  }
 );
 
 //db 테이블 시퀄라이즈 등록

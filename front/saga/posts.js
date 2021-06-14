@@ -209,9 +209,9 @@ function* watchAddComment() {
 function* addcomment(action) {
   console.log('addcomment 실행');
   try {
-    // yield call(addcommentAPI, action.data);
+    const res = yield call(addcommentAPI, action.data);
     // yield delay(1000);
-    yield put({type: ADD_COMMENT_SUCCESS, data: action.data}); // data = {content : comment, postId : post.id}
+    yield put({type: ADD_COMMENT_SUCCESS, data: res.data}); // res.data = { postId: postId, resComment }
   } catch (e) {
     console.log(e);
     yield put({type: ADD_COMMENT_FAILURE, error: e.response});
@@ -233,9 +233,9 @@ function* watchEditComment() {
 function* editcomment(action) {
   console.log('editcomment의 실행');
   try {
-    // yield call(editcommentAPI, action.data);
+    const res = yield call(editcommentAPI, action.data);
     // yield delay(1000);
-    yield put({type: EDIT_COMMENT_SUCCESS, data: action.data}); // data = {  postId, commentId: comment.id, content: text }
+    yield put({type: EDIT_COMMENT_SUCCESS, data: res.data}); // data = { postId: postId, comment: revComment }
   } catch (e) {
     console.log(e);
     yield put({type: EDIT_COMMENT_FAILURE, error: e.response.data});
@@ -257,9 +257,9 @@ function* watchDeleteComment() {
 function* deletecomment(action) {
   console.log('deletecomment 실행');
   try {
-    // yield call(deletecommentAPI, action.data);
+    const res = yield call(deletecommentAPI, action.data);
     // yield delay(1000);
-    yield put({type: DELETE_COMMENT_SUCCESS, data: action.data}); // data = {postId: postId, commentId: commentId}
+    yield put({type: DELETE_COMMENT_SUCCESS, data: res.data}); // data = {postId: postId, commentId: commentId}
   } catch (e) {
     console.log(e);
     yield put({type: DELETE_COMMENT_FAILURE, error: e.response.data});
@@ -268,7 +268,7 @@ function* deletecomment(action) {
 
 //API
 const deletecommentAPI = data => {
-  // data = {title, content, Images}
+  // data = {postId: postId, commentId: commentId}
   return axios.delete(`/post/${data.postId}/${data.commentId}`);
 };
 

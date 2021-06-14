@@ -104,13 +104,15 @@ const Comment = ({postId, comment, onPressReComment}) => {
           />
         )}
         <View style={Commentstyle.commentBottom}>
-          <Text style={Commentstyle.createdAt}> {comment.createdAt} </Text>
+          <Text style={Commentstyle.createdAt}>
+            {comment.createdAt.slice(0, 10)}
+          </Text>
           <Text>•</Text>
           <TouchableOpacity
             onPress={onPressLike({postId, commentId: comment.id})}>
             <Text style={Commentstyle.like}>
               <Ionicons name="thumbs-up-outline" size={15} />
-              {comment.like}
+              {comment?.like}
             </Text>
           </TouchableOpacity>
           <Text>•</Text>

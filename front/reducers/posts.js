@@ -466,8 +466,9 @@ const posts = (state = initialState, action) => {
         draft.addCommentDone = true;
         // post를 찾아서 넣기
         const post = draft.mainPosts.find(p => p.id === action.data.postId);
-        post.Comments.push(dummyComment(action.data));
+        post.Comments.push(action.data.resComment);
         // id를 찾아서 넣기(id 쓰면 {} 써야하니까 post로 씀)
+        // 다른 방법
         // const id = draft.mainPosts.findIndex(p => p.id === action.data.postId);
         // draft.mainPosts[id].Comments.push(dummyComment(action.data));
         break;
@@ -489,9 +490,9 @@ const posts = (state = initialState, action) => {
           p => p.id === action.data.postId,
         );
         const targetCommentId = targetPost.Comments.findIndex(
-          c => c.id === action.data.commentId,
+          c => c.id === action.data.comment.id,
         );
-        targetPost.Comments[targetCommentId] = dummyComment(action.data);
+        targetPost.Comments[targetCommentId] = action.data.comment;
         break;
       case EDIT_COMMENT_FAILURE:
         draft.editCommentLoading = false;
@@ -621,14 +622,19 @@ const posts = (state = initialState, action) => {
         draft.likeCommentDone = false;
         draft.likeCommentError = null;
         break;
-      case LIKE_COMMENT_SUCCESS:
+      case LIKE_COMMENT_SUCCESS: {
         draft.likeCommentLoading = false;
         draft.likeCommentDone = true;
+        console.log(action.data);
         const postId = draft.mainPosts.findIndex(
           p => p.id === action.data.postId,
         );
-        draft.mainPosts[postId].Comment.push(action.data.comment);
+        const commentId = draft.mainPosts[postId].Comments.findIndex(
+          c => c.id === action.data.comment.id,
+        );
+        draft.mainPosts[postId].Comments[commentId] = action.data.comment;
         break;
+      }
       case LIKE_COMMENT_FAILURE:
         draft.likeCommentLoading = false;
         draft.likeCommentDone = false;

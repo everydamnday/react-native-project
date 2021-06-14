@@ -11,8 +11,11 @@ const { Op } = require("sequelize");
 require("dotenv").config();
 
 // 포스트 라우터
+//////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////// Post /////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////
 
-// 게시글 불러오기
+// 포스트 불러오기
 router.get(`/posts/:lastId`, async (req, res, next) => {
   try {
     const where = {};
@@ -39,7 +42,7 @@ router.get(`/posts/:lastId`, async (req, res, next) => {
   }
 });
 
-// 게시글 작성
+// 포스트 작성
 // 포스트 내용 저장 => 이미지 저장 => full객체 응답
 router.post("/add", async (req, res, next) => {
   console.log("req.session", req.session);
@@ -205,7 +208,7 @@ router.get("/:postId/see", async (req, res, next) => {
         where: { id: postId },
         include: standard_include_Post,
       });
-      console.log("보기", seenPost);
+      // console.log("보기", seenPost);
       return res.status(200).send(seenPost);
     }
   } catch (error) {
@@ -214,7 +217,88 @@ router.get("/:postId/see", async (req, res, next) => {
   }
 });
 
-// 포스트 좋아요
+//////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////// Comment //////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////
+
+// 코멘트 생성하기
+// 댓글을 생성 => 포스트를 찾아서 댓글과 연결 => full 객체를 만들어서 postId와 함께 보내주기
+router.post("/:postId/comment", async (req, res, next) => {
+  const { content, postId } = req.body;
+  try {
+    // 댓글이 달린 포스트
+    const post = await Post.findOne({ where: { id: postId } });
+    // 댓글 생성
+    const comment = await Comment.create({
+      content: content,
+      see: 0,
+      like: 0,
+      UserId: req.user.id,
+    });
+
+    // 해당 포스트에 생성한 댓글을 연결시켜 주기
+    await post.addComment(comment);
+
+    // full 코멘트 만들어 보내주기
+    const resComment = await Comment.findOne({
+      where: { id: comment.id },
+      include: [
+        { model: User },
+        { model: Recomment, attirbutes: ["id"] },
+        { model: User, as: "CommentLiker", attirbutes: ["id"] },
+      ],
+    });
+    return res.status(200).send({ postId: postId, resComment });
+  } catch (error) {
+    console.error(error);
+    return next(error);
+  }
+});
+
+// 코멘트 수정하기
+// 코멘트를 찾아서 업데이트 => 코멘트 풀객체를 찾아서 postId와 함께 전달
+router.post("/:postId/:commentId/edit", async (req, res, next) => {
+  const { postId, commentId, content } = req.body;
+  try {
+    const result = await Comment.update(
+      { content: content },
+      { where: { id: commentId } }
+    );
+    if (result[0] === 1) {
+      const revComment = await Comment.findOne({
+        where: { id: commentId },
+        include: standard_include_Comment,
+      });
+      return res.status(200).send({ postId: postId, comment: revComment });
+    }
+  } catch (error) {
+    console.error(error);
+    return next(error);
+  }
+});
+
+// 코멘트 삭제하기
+// 해당 코멘트를 찾아서 삭제 => postId commentId를 보내준다.
+router.delete("/:postId/:commentId/", async (req, res, next) => {
+  const { postId, commentId } = req.params;
+  console.log(postId, commentId);
+  try {
+    const result = await Comment.destroy({ where: { id: commentId } });
+    if (result[0] === 1) {
+      return res
+        .status(200)
+        .send({ postId: parseInt(postId), commentId: parseInt(commentId) });
+    } else {
+      return res.send(400).send("삭제에 실패했습니다");
+    }
+  } catch (error) {
+    console.error(error);
+    return next(error);
+  }
+});
+
+// 포스트 좋아요(현재는 like + 1 => 이후 모델 변경)
+// 좋아요한 포스트 찾기 => like 업데이트 하기 => full post 찾아서 보내기
 router.get("/:postId/like", async (req, res, next) => {
   const { postId } = req.params;
   try {
@@ -227,6 +311,7 @@ router.get("/:postId/like", async (req, res, next) => {
       },
       { where: { id: postId } }
     );
+    // 업데이트가 성공하면 result = [1] 이다.
     if (result[0] === 1) {
       const likePost = await Post.findOne({
         where: { id: postId },
@@ -240,7 +325,8 @@ router.get("/:postId/like", async (req, res, next) => {
   }
 });
 
-// 코멘트 좋아요
+// 코멘트 좋아요(현재는 like + 1 => 이후 모델 변경)
+// 좋아요한 코멘트 찾기 => 코멘트 like 업데이트 => full comment 객체 찾기 => postId와 함께 full 객체 보내기
 router.get("/:postId/:commentId/like", async (req, res, next) => {
   const { postId, commentId } = req.params;
   try {
@@ -258,9 +344,11 @@ router.get("/:postId/:commentId/like", async (req, res, next) => {
     if (result[0] === 1) {
       const likeComment = await Comment.findOne({
         where: { id: commentId, PostId: postId },
-        // include: standard_include_Comment, 추후 모델 변경 시 적용
+        include: standard_include_Comment,
       });
-      return res.status(200).send({ comment: likeComment, postId });
+      return res
+        .status(200)
+        .send({ comment: likeComment, postId: parseInt(postId) });
     }
   } catch (error) {
     console.error(error);
@@ -268,7 +356,8 @@ router.get("/:postId/:commentId/like", async (req, res, next) => {
   }
 });
 
-// 리코멘트 좋아요
+// 리코멘트 좋아요(현재는 like + 1 => 이후 모델 변경)
+// 좋아요한 리코멘트 찾기 => 리코멘트 like 업데이트 => full recomment 객체 찾기 => postId, commentId와 함께 full 객체 보내기
 router.get("/:postId/:commentId/like", async (req, res, next) => {
   const { postId, commentId, recommentId } = req.params;
   try {
@@ -308,19 +397,19 @@ module.exports = router;
 //   fs.mkdirSync("uploads");
 // }
 
-// 표준 Post테이블 조인 모델 : include
+// 표준 Post테이블 조인 모델
 const standard_include_Post = [
   { model: User, exclude: ["password"] },
   {
     model: Comment,
-    attributes: ["id", "content"],
+    // attributes: ["id", "content"],
     include: [
       { model: User, exclude: ["password"] }, // 코멘트 작성자
       { model: Post, attributes: ["id"] }, // 코멘트가 달린 포스트
       { model: User, as: "CommentLiker", attributes: ["id"] }, // 코멘트를 좋아요 한 유저
       {
         model: Recomment,
-        attributes: ["id", "content"],
+        // attributes: ["id", "content"],
         include: [
           { model: User, attributes: ["id", "nickname"] }, // 리코멘트 작성자
           { model: Comment, attributes: ["id"] }, // 리코멘트가 달린 코멘트
@@ -346,10 +435,31 @@ const standard_include_Post = [
   },
   { model: Image, attributes: ["id", "uri"] }, // 포스트에 달린 이미지
 ];
-
+// 표준 User테이블 조인 모델
 const standard_include_User = [
   { model: Post, attributes: ["id"] }, // 유저가 쓴 포스트
   { model: Comment, attributes: ["id"] }, // 유저가 쓴 코멘트
   { model: Recomment, attributes: ["id"] }, // 유저가 쓴 리코멘트
   { model: Post, as: "Bookmarked", attributes: ["id"] }, // 유저가 북마크한 포스트
+];
+// 표준 Comment테이블 조인 모델
+const standard_include_Comment = [
+  { model: User, exclude: ["password"] }, // 코멘트 작성자
+  { model: Post, attributes: ["id"] }, // 코멘트가 달린 포스트
+  { model: User, as: "CommentLiker", attributes: ["id"] }, // 코멘트를 좋아요 한 유저
+  {
+    model: Recomment,
+    // attributes: ["id", "content"],
+    include: [
+      { model: User, attributes: ["id", "nickname"] }, // 리코멘트 작성자
+      { model: Comment, attributes: ["id"] }, // 리코멘트가 달린 코멘트
+      { model: User, as: "RecommentLiker", attributes: ["id"] }, // 리코멘트를 좋아요 한 유저
+    ],
+  },
+];
+// 표준 Recomment테이블 조인 모델
+const standard_include_Recomment = [
+  { model: User }, // 리코멘트 작성자
+  { model: Comment, attributes: ["id"] }, // 리코멘트가 달린 코멘트
+  { model: User, as: "RecommentLiker", attributes: ["id"] }, // 리코멘트를 좋아요 한 유저
 ];

@@ -25,7 +25,7 @@ const EditComment = ({
 }) => {
   const dispatch = useDispatch();
   const [text, onChangeContent, setContent] = useInput('');
-  const [height, setHeight] = useState(50);
+  const [height, setHeight] = useState(40);
 
   // 초기 댓글 text 삽입
   useEffect(() => {
@@ -52,7 +52,7 @@ const EditComment = ({
       dispatch(
         editReCommentRequest({
           postId,
-          commentId,
+          commentId, // 리코멘트 창이 열릴 때는 commentId가 들어온다.
           recommentId: recomment.id,
           content: text,
         }),

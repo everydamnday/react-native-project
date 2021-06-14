@@ -215,7 +215,9 @@ const Post = ({post, tab}) => {
           </TouchableOpacity>
         </View>
         <View style={BottomOfPost.bottom_right}>
-          <Text style={BottomOfPost.createdAt}>{post?.createdAt}</Text>
+          <Text style={BottomOfPost.createdAt}>
+            {post?.createdAt.slice(0, 10)}
+          </Text>
           <TouchableOpacity onPress={onAddBookMark}>
             <Ionicons name="bookmark-outline" size={15} />
           </TouchableOpacity>

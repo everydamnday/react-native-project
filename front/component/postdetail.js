@@ -175,7 +175,7 @@ const Detail = ({route, navigation}) => {
   useEffect(() => {
     dispatch(addSeeRequest({postId: post.id}));
     // // 내가 본 게시물인지 체크하는 조건(post.see.User.id.includes(me.id))
-    // if (post.see.User.id.includes(me.id)) {
+    // if (post.see.includes[me.id]) {
     //   // 이미 본 게시물인 경우
     //   return null;
     // } else {
@@ -190,7 +190,7 @@ const Detail = ({route, navigation}) => {
     dispatch(likePost(id));
   };
 
-  // 대댓글 분리
+  // 댓글, 대댓글 전환
   const [reCommentInputOpen, setReCommentInputOpen] = useState(false);
   const [targetCommenter, setTargetCommenter] = useState(''); // 누구 댓글에 달거냐(view용)
   const [targetCommentId, setTargetCommentId] = useState(''); // 대댓글 달려는 댓글 id가 뭐냐(서버 전달용)
@@ -207,7 +207,7 @@ const Detail = ({route, navigation}) => {
     }
   };
 
-  // 댓글
+  // 댓글, 대댓글 제출하기
   const [comment, onChangeComment, setComment] = useInput();
   const dispatch = useDispatch();
   const onSubmitComment = () => {
@@ -240,7 +240,9 @@ const Detail = ({route, navigation}) => {
               <Text style={TopOfDetailPost.userinfo}>
                 {post.User.nickname} / {post.User.brand} / {post.User.region}
               </Text>
-              <Text style={TopOfDetailPost.createdAt}>{post.createdAt}</Text>
+              <Text style={TopOfDetailPost.createdAt}>
+                {post.createdAt.slice(0, 10)}
+              </Text>
             </View>
           </View>
           <View style={BottomOfDetailPost.container}>
@@ -314,14 +316,6 @@ const Detail = ({route, navigation}) => {
           onPress={onSubmitComment}
           style={TextInputContainer.send}>
           <Ionicons name="send" size={15} />
-          {/* <Text
-            style={{
-              color: 'white',
-              textAlign: 'center',
-              fontSize: 12,
-            }}>
-            보내기
-          </Text> */}
         </TouchableOpacity>
       </View>
     </>
