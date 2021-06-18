@@ -67,7 +67,7 @@ const Addpost = StyleSheet.create({
   },
   button_text: {
     color: 'white',
-    fontSize: 20,
+    fontSize: 18,
     alignSelf: 'center',
   },
 });

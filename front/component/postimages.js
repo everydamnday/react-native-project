@@ -19,7 +19,7 @@ const style = StyleSheet.create({
     borderColor: 'grey',
     width: width_proportion_for_one,
     height: height_proportion_for_one,
-    resizeMode: 'contain',
+    resizeMode: 'cover',
   },
   pic_double: {
     borderColor: 'grey',
@@ -66,6 +66,7 @@ const PostImages = ({images}) => {
       </>
     );
   }
+
   if (images.length === 2) {
     return (
       <>
@@ -80,7 +81,9 @@ const PostImages = ({images}) => {
         </Overlay>
       </>
     );
-  } else {
+  }
+
+  if (images.length >= 3) {
     return (
       <>
         <TouchableOpacity

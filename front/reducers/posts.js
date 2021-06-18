@@ -708,6 +708,7 @@ const posts = (state = initialState, action) => {
 
 export default posts;
 
+// 샘플 initial state
 // {
 //   id: 1,
 //   User: {
